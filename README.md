@@ -1,6 +1,6 @@
 
 ## Todo list
-### creation
+### ID creation
 
 - [ ] Implement seed phrase generation / import logic 
 
@@ -11,7 +11,7 @@
 
 - [ ] Implement logic for account generation: generate proof and createAccountCredentialTx
 
-### recovery
+### ID recovery
 - [ ] Implement logic for ID recovery: connect with IDP and recover IDObjects and store in localstore
 
 - [ ] Implement logic for account recovery: connect with blockchain and search account credentials
