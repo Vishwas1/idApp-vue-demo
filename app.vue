@@ -1,6 +1,15 @@
+<script setup lang="ts">
+import { NuxtPage } from '#components';
+
+</script>
+
+
 <template>
-        <UContainer>
+        <!-- <UContainer>
                 <CreateAccount />
-        </UContainer>
+                <AccountWallet />
+        </UContainer> -->
+
+        <NuxtPage />
 
 </template>

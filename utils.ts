@@ -33,7 +33,7 @@ import { IdentityProviderIdentityStatus } from './types';
 // We dynamically resolve this as the hosted server can run at different
 // locations.
 export function getRedirectUri() {
-    return window.location.origin + '/confirm-identity';
+    return window.location.origin + '/demo';
 }
 
 /**
@@ -93,7 +93,7 @@ export function filterRecord<A extends string | number | symbol, B>(
  * those indices are hardcoded to 0. In a production wallet any number of identities and
  * accounts could be created.
  */
-export function getAccountSigningKey(seedPhrase: string, identityProviderIdentity: number) {
+export function getAccountSigningKey(seedPhrase: string, identityProviderIdentity: number, credNumber: number =0) {
     const wallet = ConcordiumHdWallet.fromSeedPhrase(seedPhrase, network);
     return wallet.getAccountSigningKey(identityProviderIdentity, identityIndex, credNumber).toString('hex');
 }
@@ -193,15 +193,15 @@ export function createCredentialDeploymentKeysAndRandomness(
     net: Network,
     identityProviderIndex: number,
     identityIndex: number,
-    credNumber: number
+    credNumber: number,
+    publicKey: string
 ) {
     const wallet = ConcordiumHdWallet.fromSeedPhrase(seedPhrase, net);
-    const publicKey = wallet.getAccountPublicKey(identityProviderIndex, identityIndex, credNumber).toString('hex');
-
     const verifyKey = {
         schemeId: 'Ed25519',
         verifyKey: publicKey,
     };
+    console.log({verifyKey})
     const credentialPublicKeys = {
         keys: { 0: verifyKey },
         threshold: 1,
