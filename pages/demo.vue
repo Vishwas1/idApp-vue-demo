@@ -18,6 +18,9 @@
                     <h4 v-if="ipList.length > 0">
                     Select IDP:
                     </h4>
+                    <!-- <div v-for="idp in ipList" v-bind:key="idp.ipInfo.ipIdentity" class="flex items-center gap-2">
+                        <UCard> {{ idp.ipInfo.ipDescription.name }}</UCard>
+                    </div> -->
                     <USelect :v-model="ipListSelected"
                         :options="ipList.map((idp, idx) => { return { label: idp.ipInfo.ipDescription.name, value: idx } })"
                         label="Select Identity Provider" />
@@ -79,6 +82,7 @@
                     <UButton type="success" @click="signSubmitAccountCrednetialTx">Submit Tx</UButton> 
                     <br>
                     AccountAddress: <UInput v-model="account_address" placeholder="Account Address" />
+                    <!-- <small><a :href="tx_url" target="_blank">{{ tx_url }}</a></small> -->
                 </UContainer>
             </UContainer>
         </UCard>
@@ -111,6 +115,7 @@ const account_sk = ref('')
 const queryParams = ref({})
 const identityObjectUrl = ref('')
 const identityObjectProxy = ref(null)
+// const tx_url = ref('')
 // Watch for changes in the route's fullPath or query
 
 
@@ -414,25 +419,30 @@ const requestAccountCrednetialTx = async () => {
  *  account wallet side
  * */ 
 const signSubmitAccountCrednetialTx = async () => {
-    // const  { credentialTransaction, accountAddress } = await requestAccountCrednetialTx();
+    try{
+         // const  { credentialTransaction, accountAddress } = await requestAccountCrednetialTx();
     
-    const credentialTransaction = cred_tx.value
-    
-    console.log(credentialTransaction)
+        const credentialTransaction = cred_tx.value
+        
+        console.log(credentialTransaction)
 
-    
-    // Sign the create account credential transaction
-    const signature = await signCredentialTransaction(credentialTransaction, account_sk.value);
+        
+        // Sign the create account credential transaction
+        const signature = await signCredentialTransaction(credentialTransaction, account_sk.value);
 
-    // Send the transaction to the network
-    const txn = await sendCredentialDeploymentTransaction(credentialTransaction, signature);
-    
+        // Send the transaction to the network
+        const txn = await sendCredentialDeploymentTransaction(credentialTransaction, signature);
+        
 
-    const transactionUrl = `${ccdscanBaseUrl}/?dcount=1&dentity=transaction&dhash=${txn.toString()}`;
-    console.log('Transaction URL:', transactionUrl);
-    alert(transactionUrl)
+        const transactionUrl = `${ccdscanBaseUrl}/?dcount=1&dentity=transaction&dhash=${txn.toString()}`;
+        console.log('Transaction URL:', transactionUrl);
+        alert('Transaction successfully submitted. Press ok to check the transaction on CCDscan');
+        window.open(transactionUrl, "_blank");
 
-
+    }catch(e){
+        alert('Error: ' + e.message)
+    }
+   
 }
 
 
