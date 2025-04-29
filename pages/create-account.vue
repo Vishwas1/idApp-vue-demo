@@ -4,61 +4,7 @@
             <template #header>
                 <h1>Split ID Demo</h1>
             </template>
-            <UContainer v-if="!identityObjectProxy">
-                <h1> CREATE IDENTITY</h1>
-                <br>
-                <UContainer>
-                    <h4>
-                        IDP Seed:
-                    </h4>
-                    <div class="flex items-center gap-2">
-                        <UTextarea
-                        v-model="seed"
-                        autoresize
-                        :rows="2"
-                        class="flex-1"
-                        />
-                        <UButton @click="generateSeed">Generate</UButton>
-                        <!-- <UButton :disabled="isSeed" type="success" @click="revocerSeed">Recover</UButton> -->
-                    </div>
-                    <!-- <UContainer class="">
-                        <UTextarea
-                        v-model="seed"
-                        autoresize
-                        :rows="4"
-                        />
-                        <UButton @click="generateSeed" color="primary" block>
-                            Generate
-                        </UButton>
-                    </UContainer> -->
-
-                    <!-- <UTextarea v-model="seed" />
-                    <UButton type="success" @click="generateSeed">Generate</UButton>   -->
-                    <!-- <UButton :disabled="isSeed" type="success" @click="revocerSeed">Recover</UButton> -->
-
-                    <h4 v-if="ipList.length > 0">
-                    Select IDP:
-                    </h4>
-                     
-                    <div class="flex items-center gap-2">
-                        <UCard v-for="idp in ipList" v-bind:key="idp.ipInfo.ipIdentity" @click="createIdentity(idp)" style="cursor: pointer;"> 
-                            <img :src="'data:image/png;base64,'+idp.metadata.icon" style="width: 50px;height: 50px;">    {{ idp.ipInfo.ipDescription.name }}
-                        </UCard>
-                    </div>
-                     <!-- <div class="flex space-x-4">
-                        <div class="w-1/2 bg-blue-200 p-4 rounded">
-                        Left Div
-                        </div>
-                        <div class="w-1/2 bg-green-200 p-4 rounded">
-                        Right Div
-                        </div>
-                    </div> -->
-                    
-                    <!-- <UButton  :disabled="!isSeed" label="Create Identity" @click="createIdentity" />   -->
-                    <!-- <UButton  :disabled="!isSeed" label="Recover Identity" @click="recoverIdentity" /> -->
-                </UContainer>
-            </UContainer>
-
+           
             <UContainer v-if="identityObjectProxy">
                 <h1> YOUR IDENTITY</h1>
                 <br>
@@ -66,17 +12,7 @@
                     <h3>Identity</h3>
                     <pre>{{ identityObjectProxy?.attributeList?.chosenAttributes }}</pre>
                 </UContainer>
-            </UContainer>
-
-            <!-- <UContainer v-if="identityObjectProxy">
-                <h3>Identity</h3>
-                <pre>{{ identityObjectProxy?.attributeList?.chosenAttributes }}</pre>
-                <h3>AccountAddress</h3>
-                <pre>{{ accountAddressProxy }}</pre>
-                <UButton  :disabled="!isSeed" label="Create Account With Identity"
-                    @click="requestAccountCrednetialTx" />
-            </UContainer> -->
-
+            </UContainer>            
             <UContainer v-if="identityObjectProxy">
                 <br>
                 <h1> CREATE ACCOUNT</h1>

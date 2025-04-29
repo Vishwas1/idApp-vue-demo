@@ -11,29 +11,8 @@
                     <h4>
                         IDP Seed:
                     </h4>
-                    <div class="flex items-center gap-2">
-                        <UTextarea
-                        v-model="seed"
-                        autoresize
-                        :rows="2"
-                        class="flex-1"
-                        />
-                        <UButton @click="generateSeed">Generate</UButton>
-                        <!-- <UButton :disabled="isSeed" type="success" @click="revocerSeed">Recover</UButton> -->
-                    </div>
-                    <!-- <UContainer class="">
-                        <UTextarea
-                        v-model="seed"
-                        autoresize
-                        :rows="4"
-                        />
-                        <UButton @click="generateSeed" color="primary" block>
-                            Generate
-                        </UButton>
-                    </UContainer> -->
-
-                    <!-- <UTextarea v-model="seed" />
-                    <UButton type="success" @click="generateSeed">Generate</UButton>   -->
+                    <UTextarea v-model="seed" />
+                    <UButton type="success" @click="generateSeed">Generate</UButton>  
                     <!-- <UButton :disabled="isSeed" type="success" @click="revocerSeed">Recover</UButton> -->
 
                     <h4 v-if="ipList.length > 0">
@@ -41,20 +20,25 @@
                     </h4>
                      
                     <div class="flex items-center gap-2">
-                        <UCard v-for="idp in ipList" v-bind:key="idp.ipInfo.ipIdentity" @click="createIdentity(idp)" style="cursor: pointer;"> 
-                            <img :src="'data:image/png;base64,'+idp.metadata.icon" style="width: 50px;height: 50px;">    {{ idp.ipInfo.ipDescription.name }}
-                        </UCard>
+                        <UCard v-for="idp in ipList" v-bind:key="idp.ipInfo.ipIdentity"> {{ idp.ipInfo.ipDescription.name }}</UCard>
                     </div>
-                     <!-- <div class="flex space-x-4">
-                        <div class="w-1/2 bg-blue-200 p-4 rounded">
-                        Left Div
-                        </div>
-                        <div class="w-1/2 bg-green-200 p-4 rounded">
-                        Right Div
-                        </div>
-                    </div> -->
                     
-                    <!-- <UButton  :disabled="!isSeed" label="Create Identity" @click="createIdentity" />   -->
+                    
+                    <!-- <USelect :v-model="ipListSelected"
+                        :options="ipList.map((idp, idx) => { return { label: idp.ipInfo.ipDescription.name, value: idx } })"
+                        label="Select Identity Provider" />
+
+                     -->
+                     <div class="flex space-x-4">
+    <div class="w-1/2 bg-blue-200 p-4 rounded">
+      Left Div
+    </div>
+    <div class="w-1/2 bg-green-200 p-4 rounded">
+      Right Div
+    </div>
+  </div>
+                    <MyIds/>
+                    <UButton  :disabled="!isSeed" label="Create Identity" @click="createIdentity" />  
                     <!-- <UButton  :disabled="!isSeed" label="Recover Identity" @click="recoverIdentity" /> -->
                 </UContainer>
             </UContainer>
@@ -143,7 +127,6 @@ const account_sk = ref('')
 const queryParams = ref({})
 const identityObjectUrl = ref('')
 const identityObjectProxy = ref(null)
-const selectedIdentityProvider = ref({})
 // const tx_url = ref('')
 // Watch for changes in the route's fullPath or query
 
@@ -259,13 +242,9 @@ const getIdentityProviders = async (): Promise<IdentityProviderWithMetadata[]> =
     return response.json();
 }
 
-const selectIdp = (idp) =>{
-    selectedIdentityProvider.value = idp
-
-}
-// const selectedIdentityProvider: ComputedRef<IdentityProviderWithMetadata> = computed(() => {
-//     return ipList.value[ipListSelected.value]
-// })
+const selectedIdentityProvider: ComputedRef<IdentityProviderWithMetadata> = computed(() => {
+    return ipList.value[ipListSelected.value]
+})
 
 const determineAnonymityRevokerThreshold = (anonymityRevokerCount: number) => {
     return Math.min(anonymityRevokerCount - 1, 255);
@@ -318,10 +297,9 @@ const getLatestCredentialNumber = () => {
     return index
 }
 
-const createIdentity = async (idp) => {
+const createIdentity = async () => {
     try {
 
-        selectedIdentityProvider.value = idp
         loading.value = false
         const wallet = ConcordiumHdWallet.fromSeedPhrase(seed.value, network);
         const identityProviderIndex = selectedIdentityProvider.value.ipInfo.ipIdentity
