@@ -27,7 +27,7 @@
 
                     
                     <UButton  :disabled="!isSeed" label="Create Identity" @click="createIdentity" />  
-                    <!-- <UButton  :disabled="!isSeed" label="Recover Identity" @click="recoverIdentity" /> -->
+                    <UButton  :disabled="!isSeed" label="Recover Identity" @click="recoverIDApp" />
                 </UContainer>
             </UContainer>
 
@@ -329,11 +329,19 @@ const createIdentity = async () => {
     }
 }
 
+const recoverIDApp = async (public_key) => {
+    recoverIdentity()
+    recoverIdentityCredentials()
+}
+
+// Recover from IDP
 const recoverIdentity = async () => {
     loading.value = false
     const identityProviderIndex = selectedIdentityProvider.value.ipInfo.ipIdentity
-    const identityIndex = 0
+    const identityIndex = 0 /// 0...infinity
     const cryptographicParameters = await getCryptographicParameters()
+    
+    // ID wallet (from id seed)
     const wallet = ConcordiumHdWallet.fromSeedPhrase(seed.value, network);
     const idCredSec = wallet.getIdCredSec(identityProviderIndex, identityIndex).toString('hex');
     const identityRequestInput: IdentityRecoveryRequestWithKeysInput = {
@@ -342,7 +350,6 @@ const recoverIdentity = async () => {
         globalContext: cryptographicParameters,
         timestamp: Math.floor(Date.now() / 1000),
     };
-
     const identityRecoveryRequest: Versioned<IdRecoveryRequest> = createIdentityRecoveryRequestWithKeys(identityRequestInput)
     const url = await sendIdentityRecoveryRequest(identityRecoveryRequest, selectedIdentityProvider.value.metadata.recoveryStart);
     const response = await fetch(url);
@@ -350,12 +357,25 @@ const recoverIdentity = async () => {
         const identity = await response.json();
         localStorage.setItem('identity-object', JSON.stringify(identity.value));
         identityObjectProxy.value = identity.value
-        const credId = getCredentialId(seed.value, selectedIdentityProvider.value.ipInfo.ipIdentity, cryptographicParameters);
-        const accountInfo = await client.getAccountInfo(CredentialRegistrationId.fromHexString(credId));
-
-        accountAddressProxy.value = accountInfo.accountAddress
     }
 }
+
+// Recover form blockhain
+const recoverIdentityCredentials = async () => {
+    loading.value = false
+    const credNumber = 0; /// 0...20
+    const cryptographicParameters = await getCryptographicParameters()
+    const credId = getCredentialId(seed.value, selectedIdentityProvider.value.ipInfo.ipIdentity, cryptographicParameters, credNumber);
+    const accountInfo = await client.getAccountInfo(CredentialRegistrationId.fromHexString(credId));
+    console.log(accountInfo)
+    accountAddressProxy.value = accountInfo.accountAddress
+}
+
+// const searchAccountAddressinLocal = (public_key, credNumber) => {
+//     return {
+//         accountAddressProxy
+//     }
+// }
 
 const generateAccountSeed = async () => {
     const mnemonic = generateMnemonic(wordlist, 256);
@@ -373,7 +393,7 @@ const incrementAccountIndex = () => {
 /**
  *  account wallet side
  * */ 
-const generateAccountKeys= () => {
+const generateAccountKeys = () => {
     // generate a new seed phrase for the account wallet
     const accountSeedPhrase = localStorage.getItem('account-seed-phrase') || "birth forget knife tube frame mistake month pair that viable gentle repair casino buzz grid team tenant drip year copy dice steel jaguar fruit"// generateMnemonic(wordlist, 256)
     
