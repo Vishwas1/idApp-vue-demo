@@ -3,7 +3,7 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-04-23',
   future: { compatibilityVersion: 4 },
   app: {
-    baseURL: '/idApp-vue-demo/create-identity' // Replace with your repo name
+    baseURL: '/idApp-vue-demo/' // Replace with your repo name
   },
   ssr: false,
   devtools: { enabled: true },
