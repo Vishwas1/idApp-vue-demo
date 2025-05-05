@@ -1,92 +1,59 @@
 <template>
-    <UContainer>
-        <UCard>
+    <!-- <UContainer class="d-flex w-100">
+        <UCard class="card left-card mr-2">
+            <h1 class="text-2xl font-bold">Create Identity</h1>
+            <p class="text-gray-600">Create a new identity with the selected identity provider.</p>
             
-            <UContainer v-if="!identityObjectProxy">
-                <h1> CREATE IDENTITY</h1>
-                <br>
-                <UContainer>
-                    <h4>
-                        IDP Seed:
-                    </h4>
-                    <UTextarea v-model="seed" />
-                    <UButton type="success" @click="generateSeed">Generate</UButton>  
-                    <!-- <UButton :disabled="isSeed" type="success" @click="revocerSeed">Recover</UButton> -->
-
-                    <h4 v-if="ipList.length > 0">
-                    Select IDP:
-                    </h4>
-                    <!-- <div v-for="idp in ipList" v-bind:key="idp.ipInfo.ipIdentity" class="flex items-center gap-2">
-                        <UCard> {{ idp.ipInfo.ipDescription.name }}</UCard>
-                    </div> -->
-                    <USelect :v-model="ipListSelected"
-                        :options="ipList.map((idp, idx) => { return { label: idp.ipInfo.ipDescription.name, value: idx } })"
-                        label="Select Identity Provider" />
-
-                    
-                    <UButton  :disabled="!isSeed" label="Create Identity" @click="createIdentity" />  
-                    <UButton  :disabled="!isSeed" label="Recover Identity" @click="recoverIDApp" />
-                </UContainer>
-            </UContainer>
-
-            <UContainer v-if="identityObjectProxy">
-                <h1> YOUR IDENTITY</h1>
-                <br>
-                <UContainer>
-                    <h3>Identity</h3>
-                    <pre>{{ identityObjectProxy?.attributeList?.chosenAttributes }}</pre>
-                </UContainer>
-            </UContainer>
-
-            <!-- <UContainer v-if="identityObjectProxy">
-                <h3>Identity</h3>
-                <pre>{{ identityObjectProxy?.attributeList?.chosenAttributes }}</pre>
-                <h3>AccountAddress</h3>
-                <pre>{{ accountAddressProxy }}</pre>
-                <UButton  :disabled="!isSeed" label="Create Account With Identity"
-                    @click="requestAccountCrednetialTx" />
-            </UContainer> -->
-
-            <UContainer v-if="identityObjectProxy">
-                <br>
-                <h1> CREATE ACCOUNT</h1>
-                <br>
-                <UContainer>
-                    <h4>
-                        Account Seed:
-                    </h4>
-                    <UTextarea v-model="accountSeed" />
-                    <UButton type="success" @click="generateAccountSeed">Generate</UButton> 
-                    <br>
-                    PublicKey:
-                    <div class="flex items-center gap-2">
-                        <UInput
-                        v-model="account_pk"
-                        placeholder="Public Key"
-                        class="flex-1"
-                        />
-                        <UButton @click="incrementAccountIndex">+{{ account_pk_index }}</UButton>
-                    </div>
-                    <!-- PublicKey: <UInput v-model="account_pk" placeholder="Public Key" /><br><UButton @click="incrementAccountIndex">+ Next Account</UButton> -->
-                    
-                    SecretKey: <UInput v-model="account_sk" placeholder="Secret Key" disabled />
-                    
-                    <UButton type="success" @click="requestAccountCrednetialTx">Request Cred Tx</UButton> 
-                    <h4>
-                        Account Credential Tx:
-                    </h4>
-                    <pre>{{ cred_tx }}</pre>
-
-                    <UButton type="success" @click="signSubmitAccountCrednetialTx">Submit Tx</UButton> 
-                    <br>
-                    AccountAddress: <UInput v-model="account_address" placeholder="Account Address" />
-                    <!-- <small><a :href="tx_url" target="_blank">{{ tx_url }}</a></small> -->
-                </UContainer>
-            </UContainer>
+            
         </UCard>
-    </UContainer>
+
+        <UCard class="card right-card">
+            
+            <h1 class="text-2xl font-bold">Create Identity</h1>
+            <p class="text-gray-600">Create a new identity with the selected identity provider.</p>
+            
+        </UCard>
+
+    </UContainer> -->
+    <UContainer>
+        <div class="flex items-center gap-0">
+            <UCard style="width: 100%;">
+                IDP Seed:
+
+                <UTextarea v-model="seed" />
+                <UButton type="success" @click="generateSeed" :disabled="showLoader">Generate</UButton> 
+                <!-- <UButton :disabled="isSeed" type="success" @click="revocerSeed">Recover</UButton>-->
+
+                <br><br>
+                <h4 v-if="ipList.length > 0">
+                Select an IDP:
+                </h4>
+                <!-- <div class="flex items-center gap-2">
+                        <UCard v-for="idp in ipList" v-bind:key="idp.ipInfo.ipIdentity" @click="createIdentity(idp)" style="cursor: pointer;"> 
+                            <img :src="'data:image/png;base64,'+idp.metadata.icon" style="width: 50px;height: 50px;">    {{ idp.ipInfo.ipDescription.name }}
+                        </UCard>
+                </div> -->
+                <USelect 
+                    v-model="ipListSelected"
+                    :options="ipList.map((idp, idx) => { return { label: idp.ipInfo.ipDescription.name, value: idx } })"
+                    label="Select Identity Provider" />
+
+                <UButton  label="Create Identity" @click="createIdentity" :disabled="showLoader" />   
+                / <UButton  label="Recover Identity" @click="recoverIDApp" :disabled="showLoader" />   
+            </UCard>    
+            <!-- <UCard style="width: 38%;">
+                <h1 class="text-2xl font-bold">Your IDs ({{ idLength  }})</h1>
+                <MyIds/>
+            </UCard>     -->
+        </div>
+  </UContainer>
 </template>
 
+
+            
+            
+            
+         
 
 <script setup lang="ts">
 
@@ -97,6 +64,9 @@ import { ConcordiumHdWallet, ConcordiumGRPCWebClient, TransactionExpiry, type Id
 import { IdentityProviderIdentityStatus, type IdentityTokenContainer } from '~/types';
 import { createCredentialDeploymentKeysAndRandomness, getAccountSigningKey, getCredentialId, getCryptographicParameters, getDefaultTransactionExpiry, getRedirectUri, loop, sendCredentialDeploymentTransaction, sendIdentityRecoveryRequest } from '~/utils';
 import { identityIndex } from '~/constants';
+import { computed } from 'vue';
+import MyIds from '~/components/MyIds.vue'
+const showLoader = useState('showLoader')
 
 const network = 'Testnet';
 const route = useRoute()
@@ -141,22 +111,24 @@ const clearStorage = () => {
     localStorage.clear()
 }
 
+
+onMounted(async () => {
+    showLoader.value = true
+    const ip_info = await getIdentityProviders()
+    showLoader.value = false
+    localStorage.setItem('ip-info', JSON.stringify(ip_info))
+    ipList.value = ip_info
+})
+
 /// ID Wallet
 const generateSeed = async () => {
-
     clearStorage()
     const mnemonic = generateMnemonic(wordlist, 256);
     localStorage.setItem('seed-phrase', mnemonic);
     seed.value = mnemonic
-
-
-    const ip_info = await getIdentityProviders()
-    localStorage.setItem('ip-info', JSON.stringify(ip_info))
-    ipList.value = ip_info
-
     isSeed.value = true
-
 }
+
 
 const revocerSeed = async () => {
     const mnemonic = seed.value
@@ -172,9 +144,9 @@ const revocerSeed = async () => {
         console.log('Invalid seed phrase');
         isSeed.value = false
     }
-    const ip_info = await getIdentityProviders()
-    ipList.value = ip_info
-    localStorage.setItem('ip-info', JSON.stringify(ip_info))
+    // const ip_info = await getIdentityProviders()
+    // ipList.value = ip_info
+    // localStorage.setItem('ip-info', JSON.stringify(ip_info))
 }
 /////// /////// /////// /////// 
 
@@ -208,27 +180,20 @@ const fetchIdentity = async (identityObjectUrl: string): Promise<IdentityObjectV
 const selectedIdentityProvider: ComputedRef<IdentityProviderWithMetadata> = computed(() => {
     return ipList.value[ipListSelected.value]
 })
-watch(() => route.fullPath, () => {
-    seed.value = localStorage.getItem('seed-phrase') || ''
-    isSeed.value = seed.value.length > 0
-    if (isSeed.value) {
-        revocerSeed()
-    }
-    // Parse the query parameters every time the route changes
-    queryParams.value = Object.fromEntries(new URLSearchParams(route.fullPath).entries())
-    if (queryParams.value["/demo#code_uri"]) {
-        identityObjectUrl.value = queryParams.value["/demo#code_uri"]
-        fetchIdentity(identityObjectUrl.value).then((identityObject) => {
-            console.log('Identity Object:', identityObject);
-            localStorage.setItem('identity-object', JSON.stringify(identityObject));
-            identityObjectProxy.value = identityObject
-            // Handle the identity object as needed
-        }).catch((error) => {
-            console.error('Error fetching identity object:', error);
-        });
-    }
 
-}, { immediate: true })
+
+const idLength = computed(() => {
+    const idObjectStr = localStorage.getItem('identity-objects')
+    let idObjects = [];
+    
+    if(idObjectStr){
+        idObjects = JSON.parse(idObjectStr)
+    } else {
+        idObjects = []
+    }
+    return idObjects.length
+})
+
 
 /////// /////// /////// /////// 
 
@@ -267,12 +232,15 @@ const sendIdentityRequest = async (idObjectRequest: Versioned<IdObjectRequestV1>
 }
 
 const getLatestIdentityIndex = () => {
-    if(localStorage.getItem('identity-index') == null){
-        localStorage.setItem('identity-index', '0')
+    const idObjectStr = localStorage.getItem('identity-objects')
+    let idObjects = [];
+    
+    if(idObjectStr){
+        idObjects = JSON.parse(idObjectStr)
+    } else {
+        idObjects = []
     }
-    const index = parseInt(localStorage.getItem('identity-index') || '0')
-    localStorage.setItem('identity-index', (index).toString())
-    return index
+    return idObjects.length
 }
 
 const getLatestCredentialNumber = () => {
@@ -292,7 +260,7 @@ const createIdentity = async () => {
         const identityProviderIndex = selectedIdentityProvider.value.ipInfo.ipIdentity
         
         
-        const identityIndex = getLatestIdentityIndex()
+        const identityIndex = idLength.value // getLatestIdentityIndex()
 
         const idCredSec = wallet.getIdCredSec(identityProviderIndex, identityIndex).toString('hex');
         const prfKey = wallet.getPrfKey(identityProviderIndex, identityIndex).toString('hex');
@@ -319,57 +287,162 @@ const createIdentity = async () => {
             return;
         }
         if (!url?.includes(getRedirectUri())) {
-            window.open(url,"_self");
+            window.open(url,"_blank");
         } else {
             window.alert('An error occurred during the identity creation.');
         }
     } catch (e) {
         console.log(e);
-
-
     }
 }
 
+watch(() => route.fullPath, () => {
+    seed.value = localStorage.getItem('seed-phrase') || ''
+    isSeed.value = seed.value.length > 0
+    if (isSeed.value) {
+        revocerSeed()
+    }
+    // // Parse the query parameters every time the route changes
+    // queryParams.value = Object.fromEntries(new URLSearchParams(route.fullPath).entries())
+    // if (queryParams.value["/demo#code_uri"]) {
+    //     identityObjectUrl.value = queryParams.value["/demo#code_uri"]
+    //     fetchIdentity(identityObjectUrl.value).then((identityObject) => {
+    //         console.log('Identity Object:', identityObject);
+    //         localStorage.setItem('identity-object', JSON.stringify(identityObject));
+    //         identityObjectProxy.value = identityObject
+    //         // Handle the identity object as needed
+    //     }).catch((error) => {
+    //         console.error('Error fetching identity object:', error);
+    //     });
+    // }
+
+}, { immediate: true })
+
 const recoverIDApp = async (public_key) => {
-    recoverIdentity()
-    recoverIdentityCredentials()
+    showLoader.value = true
+    revocerSeed();
+
+    const a = recoverIdentity()
+    const b = recoverIdentityCredentials()
+    Promise.all([a, b]).then(() => {
+        showLoader.value = false
+        window.location.reload()
+    }).catch((e) => {
+        console.error(e)
+        showLoader.value = false
+    })
+
+    // await recoverIdentity()
+    // await recoverIdentityCredentials()
+    // showLoader.value = false
+    // window.location.reload()
 }
 
 // Recover from IDP
 const recoverIdentity = async () => {
     loading.value = false
     const identityProviderIndex = selectedIdentityProvider.value.ipInfo.ipIdentity
-    const identityIndex = 0 /// 0...infinity
-    const cryptographicParameters = await getCryptographicParameters()
     
-    // ID wallet (from id seed)
-    const wallet = ConcordiumHdWallet.fromSeedPhrase(seed.value, network);
-    const idCredSec = wallet.getIdCredSec(identityProviderIndex, identityIndex).toString('hex');
-    const identityRequestInput: IdentityRecoveryRequestWithKeysInput = {
-        idCredSec,
-        ipInfo: selectedIdentityProvider.value.ipInfo,
-        globalContext: cryptographicParameters,
-        timestamp: Math.floor(Date.now() / 1000),
-    };
-    const identityRecoveryRequest: Versioned<IdRecoveryRequest> = createIdentityRecoveryRequestWithKeys(identityRequestInput)
-    const url = await sendIdentityRecoveryRequest(identityRecoveryRequest, selectedIdentityProvider.value.metadata.recoveryStart);
-    const response = await fetch(url);
-    if (response.ok) {
-        const identity = await response.json();
-        localStorage.setItem('identity-object', JSON.stringify(identity.value));
-        identityObjectProxy.value = identity.value
-    }
-}
-
-// Recover form blockhain
-const recoverIdentityCredentials = async () => {
-    loading.value = false
-    const credNumber = 0; /// 0...20
+    
+    // const identityIndex = 0 /// 0...infinity
     const cryptographicParameters = await getCryptographicParameters()
-    const credId = getCredentialId(seed.value, selectedIdentityProvider.value.ipInfo.ipIdentity, cryptographicParameters, credNumber);
-    const accountInfo = await client.getAccountInfo(CredentialRegistrationId.fromHexString(credId));
-    console.log(accountInfo)
-    accountAddressProxy.value = accountInfo.accountAddress
+    let identityObjects = []
+    
+    // localStorage.getItem('identity-objects')
+    //     if(!identityObjects){
+    //         identityObjects = []
+    //     } else {
+    //         identityObjects = JSON.parse(identityObjects)
+    //     }
+        const wallet = ConcordiumHdWallet.fromSeedPhrase(seed.value, network);
+
+        for(let identityIndex = 0; identityIndex <= 20; identityIndex++){
+        
+                // ID wallet (from id seed)
+                const idCredSec = wallet.getIdCredSec(identityProviderIndex, identityIndex).toString('hex');
+                const identityRequestInput: IdentityRecoveryRequestWithKeysInput = {
+                    idCredSec,
+                    ipInfo: selectedIdentityProvider.value.ipInfo,
+                    globalContext: cryptographicParameters,
+                    timestamp: Math.floor(Date.now() / 1000),
+                };
+                const identityRecoveryRequest: Versioned<IdRecoveryRequest> = createIdentityRecoveryRequestWithKeys(identityRequestInput)
+            try{
+                const url = await sendIdentityRecoveryRequest(identityRecoveryRequest, selectedIdentityProvider.value.metadata.recoveryStart);
+            
+                console.log(url)
+                const response = await fetch(url);
+                if (response.ok) {
+                    const identity = await response.json();
+                    identityObjects.push(identity.value)
+                    //identityObjectProxy.value = identity.value
+                }
+            }catch(e){
+                console.error(e.message)
+                console.log('continuing... identityIndex = ' + identityIndex)
+            }
+            
+        }
+
+
+    localStorage.setItem('identity-objects', JSON.stringify(identityObjects, (key, value) =>typeof value === "bigint" ? Number(value) : value));
+
+    
+    
+    
+ }
+
+// // Recover form blockhain
+// const recoverIdentityCredentials = async () => {
+//     loading.value = false
+//     // const credNumber = 0; /// 0...20
+//     const cryptographicParameters = await getCryptographicParameters()
+//     let identityCredentials = localStorage.getItem('identity-credentials')
+//     if(!identityCredentials){
+//         identityCredentials = []
+//     } else {
+//         identityCredentials = JSON.parse(identityCredentials)
+//     }
+//     for(let i = 0; i < 20; i++){
+//         const credId = getCredentialId(seed.value, selectedIdentityProvider.value.ipInfo.ipIdentity, cryptographicParameters, i);
+//         const accountInfo = await client.getAccountInfo(CredentialRegistrationId.fromHexString(credId));
+//         identityCredentials.push(accountInfo)
+//         // accountAddressProxy.value = accountInfo.accountAddress
+//     }
+// }
+
+
+const recoverIdentityCredentials = async () => {
+    
+    try{
+        const idSeed = seed.value
+        // const credNumber = 0; /// 0...20
+        const cryptographicParameters = await getCryptographicParameters()
+        let identityCredentials = []
+        //localStorage.getItem('identity-credentials')
+        // if(!identityCredentials){
+        //     identityCredentials = []
+        // } else {
+        //     identityCredentials = JSON.parse(identityCredentials)
+        // }01...5...10
+        for(let i = 0; i < 20; i++){
+            const credId = getCredentialId(idSeed, selectedIdentityProvider.value.ipInfo.ipIdentity, cryptographicParameters, i);
+            try{
+                const accountInfo:any = await client.getAccountInfo(CredentialRegistrationId.fromHexString(credId));
+                accountInfo['credNumber'] = i;
+                accountInfo['identityIndex'] = 0; //hardcoded for now
+                accountInfo['status'] = 'confirmed'
+                identityCredentials.push(accountInfo)
+            }catch(e){
+                console.error(e)
+            }
+            // accountAddressProxy.value = accountInfo.accountAddress
+        }
+        localStorage.setItem('identity-credentials', JSON.stringify(identityCredentials, (key, value) =>typeof value === "bigint" ? Number(value) : value));
+        }catch(e){
+            console.error(e)
+        }
+        
 }
 
 // const searchAccountAddressinLocal = (public_key, credNumber) => {
@@ -493,6 +566,8 @@ const requestAccountCrednetialTx = async () => {
     cred_tx.value = credentialTransaction;
     account_address.value = accountAddress.address;
 
+    /// 
+
     return {
         credentialTransaction, accountAddress
     }
@@ -529,3 +604,11 @@ const signSubmitAccountCrednetialTx = async () => {
 }
 /////// /////// /////// /////// 
 </script>
+<style scoped>
+.left-card {
+  width: 70%;
+}
+.right-card {
+  width: 30%;
+}
+</style>

@@ -33,7 +33,7 @@ import { IdentityProviderIdentityStatus } from './types';
 // We dynamically resolve this as the hosted server can run at different
 // locations.
 export function getRedirectUri() {
-    return window.location.origin + '/demo';
+    return window.location.origin + '/idp-callback';
 }
 
 /**
