@@ -45,9 +45,9 @@ const fetchIdentity = async (identityObjectUrl: string): Promise<IdentityObjectV
 onMounted(() => {
     // Parse the query parameters every time the route changes
     queryParams.value = Object.fromEntries(new URLSearchParams(route.fullPath).entries())
-    if (queryParams.value["/idp-callback#code_uri"]) {
+    if (queryParams.value["/idApp-vue-demo/idp-callback#code_uri"]) {
         ifIdCreationInProgress.value = true
-        const idObjectUrl = queryParams.value["/idp-callback#code_uri"]
+        const idObjectUrl = queryParams.value["/idApp-vue-demo/idp-callback#code_uri"]
         
         if(!idObjectUrl){
             throw new Error("No identity object URL found in the query parameters.");
