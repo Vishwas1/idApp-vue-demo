@@ -5,11 +5,11 @@
   "scripts": {
     "build": "tsc && nuxt build",
     "dev": "tsc && nuxt dev",
-    "generate:gh": "cross-env BASE_URL=/idApp-vue-demo/ nuxt generate",
-    "generate:local": "cross-env BASE_URL=/ nuxi generate",
+    "generate:gh": "cross-env NODE_ENV=production BASE_URL=/idApp-vue-demo/ nuxi generate",
+    "generate:local": "cross-env NODE_ENV=development BASE_URL=/ nuxi generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
-    "deploy": "gh-pages -d .output/public"
+    "deploy": "./deploy.sh"
   },
   "dependencies": {
     "@concordium/web-sdk": "^9.1.0",

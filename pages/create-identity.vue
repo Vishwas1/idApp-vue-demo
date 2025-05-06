@@ -86,7 +86,7 @@ const ipList = ref<IdentityProviderWithMetadata[]>([])
 const ipListSelected = ref(0)
 const accountAddressProxy = ref({})
 
-const worker = new Worker(new URL('workers/identity.worker.js', 'http://localhost:3000'));
+// const worker = new Worker(new URL('workers/identity.worker.js', 'http://localhost:3000'));
 const nodeAddress = 'https://grpc.testnet.concordium.com';
 const nodePort = 20000;
 // Base URL for the wallet proxy.

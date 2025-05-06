@@ -110,7 +110,7 @@ type IdentityProviderWithMetadata = IdentityProvider & {
 
 
 
-const worker = new Worker(new URL('workers/identity.worker.js', 'http://localhost:3000'));
+// const worker = new Worker(new URL('workers/identity.worker.js', 'http://localhost:3000'));
 
 const nodeAddress = 'https://grpc.testnet.concordium.com';
 const nodePort = 20000;

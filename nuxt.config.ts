@@ -5,6 +5,9 @@ export default defineNuxtConfig({
   app: {
     baseURL: process.env.BASE_URL || '/', // Replace with your repo name
   },
+  nitro: {
+    preset: 'static'
+  },
   ssr: false,
   devtools: { enabled: true },
   modules: [
