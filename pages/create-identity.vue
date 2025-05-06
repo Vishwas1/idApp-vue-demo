@@ -204,6 +204,7 @@ const determineAnonymityRevokerThreshold = (anonymityRevokerCount: number) => {
 
 const sendIdentityRequest = async (idObjectRequest: Versioned<IdObjectRequestV1>, baseUrl: string) => {
     try {
+        
         const params = {
             scope: 'identity',
             response_type: 'code',
@@ -227,8 +228,7 @@ const sendIdentityRequest = async (idObjectRequest: Versioned<IdObjectRequestV1>
         console.log(e.message);
         alert('An error occurred while sending the identity request. Maybe identity exists already. Try Recover Account');
         return null;
-
-    }
+    } 
 }
 
 const getLatestIdentityIndex = () => {
@@ -255,7 +255,7 @@ const getLatestCredentialNumber = () => {
 const createIdentity = async () => {
     try {
 
-        loading.value = false
+        showLoader.value = true
         const wallet = ConcordiumHdWallet.fromSeedPhrase(seed.value, network);
         const identityProviderIndex = selectedIdentityProvider.value.ipInfo.ipIdentity
         
@@ -293,6 +293,8 @@ const createIdentity = async () => {
         }
     } catch (e) {
         console.log(e);
+    } finally {
+        showLoader.value = false
     }
 }
 
