@@ -12,7 +12,6 @@ const clearStore = () => {
     localStorage.removeItem('seed-phrase')
     localStorage.removeItem('account-seed-phrase')
     window.location.reload()
-    window.location.href='/create-identity'
 }
 
 </script>
