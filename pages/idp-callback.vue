@@ -47,6 +47,7 @@ onMounted(() => {
     queryParams.value = Object.fromEntries(new URLSearchParams(route.fullPath).entries())
     console.log("queryParams", queryParams.value)
     console.log("queryParams", queryParams.value["/idp-callback#code_uri"])
+    console.log("queryParams", queryParams.value["/idp-callback/#code_uri"])
     if (queryParams.value["/idp-callback#code_uri"] || queryParams.value["/idp-callback/#code_uri"]) {
         ifIdCreationInProgress.value = true
         const idObjectUrl = queryParams.value["/idp-callback#code_uri"] || queryParams.value["/idp-callback/#code_uri"]
