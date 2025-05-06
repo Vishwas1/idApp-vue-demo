@@ -5,7 +5,8 @@
   "scripts": {
     "build": "tsc && nuxt build",
     "dev": "tsc && nuxt dev",
-    "generate": "nuxt generate",
+    "generate:gh": "cross-env BASE_URL=/idApp-vue-demo/ nuxt generate",
+    "generate:local": "cross-env BASE_URL=/ nuxi generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "deploy": "gh-pages -d .output/public"
@@ -27,6 +28,7 @@
     "vue-router": "^4.5.0"
   },
   "devDependencies": {
+    "cross-env": "^7.0.3",
     "gh-pages": "^6.3.0"
   }
 }

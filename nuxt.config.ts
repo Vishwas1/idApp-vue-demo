@@ -3,12 +3,10 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-04-23',
   future: { compatibilityVersion: 4 },
   app: {
-    baseURL: '/idApp-vue-demo/', // Replace with your repo name
-    cdnURL: '/idApp-vue-demo/'
+    baseURL: process.env.BASE_URL || '/', // Replace with your repo name
   },
   ssr: false,
   devtools: { enabled: true },
-
   modules: [
     '@nuxt/content',
     '@nuxt/eslint',
