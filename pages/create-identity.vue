@@ -18,6 +18,7 @@
     <UContainer>
         <div class="flex items-center gap-0">
             <UCard style="width: 100%;">
+            <UButton @click="showPopup" type="danger" class="">Open Popup</UButton>
                 IDP Seed:
 
                 <UTextarea v-model="seed" />
@@ -66,6 +67,10 @@ import { createCredentialDeploymentKeysAndRandomness, getAccountSigningKey, getC
 import { identityIndex } from '~/constants';
 import { computed } from 'vue';
 import MyIds from '~/components/MyIds.vue'
+import { showPopup } from '~/idapp-sdk/idapp-sdk';
+
+
+
 const showLoader = useState('showLoader')
 
 const network = 'Testnet';
