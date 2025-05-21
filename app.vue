@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import MyIds from '~/components/MyIds.vue'
 import { NuxtPage } from '#components';
 
 

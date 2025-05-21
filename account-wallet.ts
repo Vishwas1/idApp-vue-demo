@@ -10,13 +10,15 @@ import {
   type CreateAccountResponseMsgType,
   type SignedCredentialDeploymentTransaction,
   type RecoverAccountCreationRequestMessage,
+  Status,
+  type RecoverAccountResponse,
 } from "idapp-app-sdk";
 
 const projectId = "8b6c46b9127ce91195745c124870244e";
 
 export class AccountWalletWC {
   private wc_client: any
-  private session: any
+  public session: any = null
   private approval: any
   public uri: string = "";
   async initClient() {
@@ -35,7 +37,7 @@ export class AccountWalletWC {
       const { event: emittedEvent } = event;
       console.log("🎉 Aaccount wallet received:" + emittedEvent.data.message)
       alert("🎉 Aaccount wallet received:" + emittedEvent.data.message);
-      
+
       // if (emittedEvent.name === "custom_message_from_b") {
       //   console.log("🎉 App A received:", emittedEvent.data.message);
       // }
@@ -44,43 +46,32 @@ export class AccountWalletWC {
   }
 
   async connect(chainId: string = "eip155:1") {
-    try{
+    try {
+      if (!this.wc_client) throw new Error("SDK not initialized");
 
-    
-    if (!this.wc_client) throw new Error("SDK not initialized");
-    // Create pairing URI
-    console.log('Before connecting...')
-    const { uri, approval } = await this.wc_client.connect({
-      requiredNamespaces: {
-        // eip155: {
-        //   methods: ["custom_message"],
-        //   chains: [chainId],
-        //   events: [],
-        // },
-        concordium: {
-          methods: [IDAppSdkWallectConnectMethods.CREATE_ACCOUNT, IDAppSdkWallectConnectMethods.RECOVER_ACCOUNT],
-          chains: [chainId],
-          events: [IDAppSdkWallectConnectMethods.CREATE_ACCOUNT, IDAppSdkWallectConnectMethods.RECOVER_ACCOUNT], 
+      // Create pairing URI
+      console.log('Before connecting...')
+      const { uri, approval } = await this.wc_client.connect({
+        requiredNamespaces: {
+          concordium: {
+            methods: [IDAppSdkWallectConnectMethods.CREATE_ACCOUNT, IDAppSdkWallectConnectMethods.RECOVER_ACCOUNT],
+            chains: [chainId],
+            events: [IDAppSdkWallectConnectMethods.CREATE_ACCOUNT, IDAppSdkWallectConnectMethods.RECOVER_ACCOUNT],
+          },
         },
-      },
-      pairingTopic: undefined,
-    });
-    console.log('After connecting... uri ' +  "http://localhost:5173/wallet-connect?encodedUri=" + uri)
-    this.uri  = uri
-    // this.approval = approval;
-    this.session = await approval(); 
-    console.log('After approval...')
-    console.log("Scan this URI with App B (Wallet):", uri);
+        pairingTopic: undefined,
+      });
+      console.log('After connecting... uri ' + "http://localhost:5173/wallet-connect?encodedUri=" + uri)
+      this.uri = uri
+      approval().then((x: unknown) => {
+        this.session = x
+      });
+      console.log('After approval...  uri ' + "http://localhost:5173/wallet-connect?encodedUri=" + uri)
 
-   }catch(e){
+    } catch (e) {
       console.log(e)
-    } 
+    }
   }
-
-  // async approve(){
-  //   this.session = await this.approval(); 
-  //   alert("Session established:" + this.session.topic);
-  // }
 
   async request(method: string = "custom_message", chainId: string = "eip155:1", message: any) {
     if (!this.wc_client) throw new Error("SDK not initialized");
@@ -96,27 +87,9 @@ export class AccountWalletWC {
         params: { message },
       },
     });
-
-
-    ///// emitting event -- not requried for acccount wallet
-    // const result = await this.wc_client.emit({
-    //   topic: this.session.topic,
-    //   chainId: chainId,
-    //   event: {
-    //     name: method,
-    //     data: { message },
-    //   },
-    // });
     return result
   }
 }
-
-// const accountWallet = new AccountWalletWC();
-
-// async function createConnection(){
-//   await accountWallet.initClient()
-//   await accountWallet.connect(IDAppSDK.chainId)
-// }
 
 export class AccountWallet {
   accountWallet: AccountWalletWC
@@ -125,65 +98,49 @@ export class AccountWallet {
   }
 
   async createCCDAccount() {
-    try{
+    try {
 
-    // STEP1: generate SEED
+      const seed = generateMnemonic(wordlist, 256)
+      const wallet = IDAppSDK.generateAccountWithSeedPhrase(seed, 'Testnet', 0)
+      const public_key = wallet.publicKey
+      localStorage.setItem('pk', public_key)
+      
+      const new_account_request: CreateAccountCreationRequestMessage =
+        IDAppSDK.getCreateAccountCreationRequest(public_key, "I want to create a new Concordium account");
+      
+      console.log('Sending account creation request with public_key ' + public_key)
+      const create_acc_resp: CreateAccountCreationResponse = await this.accountWallet.request(
+        IDAppSdkWallectConnectMethods.CREATE_ACCOUNT,
+        IDAppSDK.chainId,
+        new_account_request)
 
-    // STEP2: generate public/private key pair
-    const seed = generateMnemonic(wordlist, 256)
-    const wallet = IDAppSDK.generateAccountWithSeedPhrase(seed, 'Testnet', 0) //ConcordiumHdWallet.fromSeedPhrase(seed, 'Testnet')
-    const public_key = wallet.publicKey //wallet.getAccountPublicKey(0, 0, 0).toString('hex')
-    // STEP3: prepare account creation request
-    const new_account_request: CreateAccountCreationRequestMessage =
-      IDAppSDK.getCreateAccountCreationRequest(public_key, "I want to create a new Concordium account");
-    // console.log(JSON.stringify(new_account_request, null, 2));
+      if (create_acc_resp.status == Status.SUCCESS) {
+        const resp: CreateAccountResponseMsgType = create_acc_resp.message as CreateAccountResponseMsgType;
+        console.log('Recieved account creation response account_address ' + resp.accountAddress)
 
+        console.log('IDAppSDK.signCredentialTransaction ...')
+        const signedCreddepTx: SignedCredentialDeploymentTransaction = await IDAppSDK.signCredentialTransaction(resp.serializedCredentialDeploymentTransaction, wallet.signingKey);
 
-    // STEP4: send request to IDApp
-    console.log('Sending account creation request with public_key ' + public_key)
-    const create_acc_resp: CreateAccountCreationResponse = await this.accountWallet.request(
-      IDAppSdkWallectConnectMethods.CREATE_ACCOUNT,
-      IDAppSDK.chainId,
-      new_account_request)
+        console.log('IDAppSDK.submitCCDTransaction ...')
+        const txHash = await IDAppSDK.submitCCDTransaction(signedCreddepTx.credentialDeploymentTransaction, signedCreddepTx.signature, 'Testnet')
+        console.log({ txHash })
 
-    if (create_acc_resp.status == "success") {
-      const resp: CreateAccountResponseMsgType = create_acc_resp.message as CreateAccountResponseMsgType;
-      console.log('Recieved account creation response account_address ' + resp.accountAddress)
-
-      console.log('IDAppSDK.signCredentialTransaction ...')
-      const signedCreddepTx: SignedCredentialDeploymentTransaction = await IDAppSDK.signCredentialTransaction(resp.serializedCredentialDeploymentTransaction, wallet.signingKey);
-
-
-      console.log('IDAppSDK.submitCCDTransaction ...')
-      const txHash = await IDAppSDK.submitCCDTransaction(signedCreddepTx.credentialDeploymentTransaction, signedCreddepTx.signature, 'Testnet')
-
-      return { account_address: resp.accountAddress, public_key, txHash }
-
-
-    } else {
-      throw new Error("")
-
-    }
-    }catch(e){
+        return { account_address: resp.accountAddress, public_key, txHash }
+      } else {
+        throw new Error("")
+      }
+    } catch (e) {
       console.log(e)
     }
-
   }
 
-
   async recoverCCDAccount(public_key: string) {
-    // STEP1: Fetch user's public key
-    // const public_key = gblPublicKey; // dummy public key
-
-    // STEP2: prepare account recovery request
     const account_recovery_request: RecoverAccountCreationRequestMessage = IDAppSDK.getRecoverAccountRecoveryRequest(public_key);
-
-    // STEP3: send request to IDApp
     console.log('Sending account recovery request with public_key ' + public_key)
-    const recover_acc_resp: any = await this.accountWallet.request(IDAppSdkWallectConnectMethods.RECOVER_ACCOUNT, IDAppSDK.chainId, account_recovery_request)
-    if (recover_acc_resp.status == "success") {
-      console.log('Recieved account recovery response address ' + recover_acc_resp.account.account_address)
-      return { account_address: recover_acc_resp.account.account_address }
+    const recover_acc_resp: RecoverAccountResponse = await this.accountWallet.request(IDAppSdkWallectConnectMethods.RECOVER_ACCOUNT, IDAppSDK.chainId, account_recovery_request)
+    if (recover_acc_resp.status == Status.SUCCESS) {
+      console.log('Recieved account recovery response address ' + recover_acc_resp.message.accountAddress)
+      return { account_address: recover_acc_resp.message.accountAddress }
     } else {
       throw new Error("")
     }
