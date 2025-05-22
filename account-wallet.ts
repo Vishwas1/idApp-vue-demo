@@ -3,7 +3,7 @@ import { SignClient } from "@walletconnect/sign-client";
 import { generateMnemonic } from "@scure/bip39";
 import { wordlist } from "@scure/bip39/wordlists/english";
 import {
-  IDAppSDK,
+  ConcordiumIDAppSDK,
   type CreateAccountCreationRequestMessage,
   IDAppSdkWallectConnectMethods,
   type CreateAccountCreationResponse,
@@ -102,28 +102,28 @@ export class AccountWallet {
     try {
 
       const seed = generateMnemonic(wordlist, 256)
-      const wallet = IDAppSDK.generateAccountWithSeedPhrase(seed, 'Testnet', 0)
+      const wallet = ConcordiumIDAppSDK.generateAccountWithSeedPhrase(seed, 'Testnet', 0)
       const public_key = wallet.publicKey
       localStorage.setItem('pk', public_key)
       
       const new_account_request: CreateAccountCreationRequestMessage =
-        IDAppSDK.getCreateAccountCreationRequest(public_key, "I want to create a new Concordium account");
+        ConcordiumIDAppSDK.getCreateAccountCreationRequest(public_key, "I want to create a new Concordium account");
       
       console.log('Sending account creation request with public_key ' + public_key)
       const create_acc_resp: CreateAccountCreationResponse = await this.accountWallet.request(
         IDAppSdkWallectConnectMethods.CREATE_ACCOUNT,
-        IDAppSDK.chainId,
+        ConcordiumIDAppSDK.chainId,
         new_account_request)
 
       if (create_acc_resp.status == Status.SUCCESS) {
         const resp: CreateAccountResponseMsgType = create_acc_resp.message as CreateAccountResponseMsgType;
         console.log('Recieved account creation response account_address ' + resp.accountAddress)
 
-        console.log('IDAppSDK.signCredentialTransaction ...')
-        const signedCreddepTx: SignedCredentialDeploymentTransaction = await IDAppSDK.signCredentialTransaction(resp.serializedCredentialDeploymentTransaction, wallet.signingKey);
+        console.log('ConcordiumIDAppSDK.signCredentialTransaction ...')
+        const signedCreddepTx: SignedCredentialDeploymentTransaction = await ConcordiumIDAppSDK.signCredentialTransaction(resp.serializedCredentialDeploymentTransaction, wallet.signingKey);
 
-        console.log('IDAppSDK.submitCCDTransaction ...')
-        const txHash = await IDAppSDK.submitCCDTransaction(signedCreddepTx.credentialDeploymentTransaction, signedCreddepTx.signature, 'Testnet')
+        console.log('ConcordiumIDAppSDK.submitCCDTransaction ...')
+        const txHash = await ConcordiumIDAppSDK.submitCCDTransaction(signedCreddepTx.credentialDeploymentTransaction, signedCreddepTx.signature, 'Testnet')
         console.log({ txHash: txHash.toString() })
 
         return { account_address: resp.accountAddress, public_key, txHash }
@@ -136,9 +136,9 @@ export class AccountWallet {
   }
 
   async recoverCCDAccount(public_key: string) {
-    const account_recovery_request: RecoverAccountCreationRequestMessage = IDAppSDK.getRecoverAccountRecoveryRequest(public_key);
+    const account_recovery_request: RecoverAccountCreationRequestMessage = ConcordiumIDAppSDK.getRecoverAccountRecoveryRequest(public_key);
     console.log('Sending account recovery request with public_key ' + public_key)
-    const recover_acc_resp: RecoverAccountResponse = await this.accountWallet.request(IDAppSdkWallectConnectMethods.RECOVER_ACCOUNT, IDAppSDK.chainId, account_recovery_request)
+    const recover_acc_resp: RecoverAccountResponse = await this.accountWallet.request(IDAppSdkWallectConnectMethods.RECOVER_ACCOUNT, ConcordiumIDAppSDK.chainId, account_recovery_request)
     if (recover_acc_resp.status == Status.SUCCESS) {
       const message: RecoverAccountMsgType = recover_acc_resp.message  as RecoverAccountMsgType
       console.log('Recieved account recovery response address ' + message.accountAddress)
@@ -148,29 +148,5 @@ export class AccountWallet {
     }
   }
 }
-
-
-
-
-
-// function callAfterSec(func: any, sec: number){
-//   return new Promise((resolve) => {
-//     setTimeout(async () => {
-//       const result  = await func()
-//       resolve(result)
-//     }, sec * 1000);
-//   })
-// }
-
-// async function test(){
-//   await createConnection()
-//   const result:any = await callAfterSec(createCCDAccount, 10)
-//   setTimeout(async () => {
-//      const result1=  await recoverCCDAccount(result['public_key'])
-//     //  console.log(result1)
-//   }, 2 * 1000);
-// }
-
-// test()
 
 

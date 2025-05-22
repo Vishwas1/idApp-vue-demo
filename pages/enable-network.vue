@@ -7,13 +7,6 @@
           <span>{{ chain }}</span>
           <UToggle :model-value="toggles[chain]" @update:modelValue="value => onToggle(chain, value)" />
         </div>
-
-
-
-
-        <!-- <UButton type="success" @click="toggleNetwork" :disabled="showLoader">Enable CCD Network</UButton> -->
-        <!-- <UToggle v-model="isCCDEnabled" /> -->
-
       </UContainer>
 
       <UContainer>
@@ -27,9 +20,7 @@
               <li>
                 WalletAddress: {{ accountAddress }}
               </li>
-            </ul>
-            
-            
+            </ul>      
           </div>
           <UButton @click="reload" >Reload</UButton>
           <UButton @click="clear" >Clear</UButton>
@@ -42,7 +33,7 @@
 
 <script setup lang="ts">
 import { AccountWallet, AccountWalletWC } from '~/account-wallet';
-import { IDAppSDK, invokeOpenIDappPopup, invokePopup, closePopup } from "idapp-app-sdk";
+import { ConcordiumIDAppSDK, ConcordiumIDAppPoup } from "idapp-app-sdk";
 import { ref, watch } from 'vue'
 const acWallet = ref<AccountWallet>()
 const accountWalletConnect = ref<AccountWalletWC>()
@@ -104,7 +95,7 @@ onMounted(async () => {
   await wcConnect()
   showLoader.value = false
   acWallet.value = new AccountWallet(accountWalletConnect.value)
-  closePopup()
+  ConcordiumIDAppPoup.closePopup()
 })
 
 watch(
@@ -118,7 +109,7 @@ watch(
       console.log('Wallect Connect Session Establised ' + newVal?.topic)
       uri.value = ""
       ifConnected.value = true
-      closePopup()
+      ConcordiumIDAppPoup.closePopup()
       toggleNetwork()
     }
 
@@ -129,13 +120,13 @@ watch(
 const toggleNetwork = () => {
   console.log(accountWalletConnect.value?.session)
   if (!accountWalletConnect.value?.session) {
-    invokeOpenIDappPopup({
+    ConcordiumIDAppPoup.invokeIdAppDeepLinkPopup({
       onIdAppPopup: openIdapp
     })
     return;
   }
 
-  invokePopup({
+  ConcordiumIDAppPoup.invokeIdAppActionsPopup({
     onCreateAccount,
     onRecoverAccount
   })
@@ -146,7 +137,7 @@ const wcConnect = async () => {
     return
   }
   // showLoader.value = true
-  await accountWalletConnect.value.connect(IDAppSDK.chainId)
+  await accountWalletConnect.value.connect(ConcordiumIDAppSDK.chainId)
   // showLoader.value = false
   uri.value = "http://localhost:5173/wallet-connect?encodedUri=" + accountWalletConnect.value.uri;
 }
