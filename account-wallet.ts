@@ -12,6 +12,7 @@ import {
   type RecoverAccountCreationRequestMessage,
   Status,
   type RecoverAccountResponse,
+  type RecoverAccountMsgType,
 } from "idapp-app-sdk";
 
 const projectId = "8b6c46b9127ce91195745c124870244e";
@@ -123,7 +124,7 @@ export class AccountWallet {
 
         console.log('IDAppSDK.submitCCDTransaction ...')
         const txHash = await IDAppSDK.submitCCDTransaction(signedCreddepTx.credentialDeploymentTransaction, signedCreddepTx.signature, 'Testnet')
-        console.log({ txHash })
+        console.log({ txHash: txHash.toString() })
 
         return { account_address: resp.accountAddress, public_key, txHash }
       } else {
@@ -139,10 +140,11 @@ export class AccountWallet {
     console.log('Sending account recovery request with public_key ' + public_key)
     const recover_acc_resp: RecoverAccountResponse = await this.accountWallet.request(IDAppSdkWallectConnectMethods.RECOVER_ACCOUNT, IDAppSDK.chainId, account_recovery_request)
     if (recover_acc_resp.status == Status.SUCCESS) {
-      console.log('Recieved account recovery response address ' + recover_acc_resp.message.accountAddress)
-      return { account_address: recover_acc_resp.message.accountAddress }
+      const message: RecoverAccountMsgType = recover_acc_resp.message  as RecoverAccountMsgType
+      console.log('Recieved account recovery response address ' + message.accountAddress)
+      return { account_address: message.accountAddress }
     } else {
-      throw new Error("")
+      throw new Error("") ///// 
     }
   }
 }

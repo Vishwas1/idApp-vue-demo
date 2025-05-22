@@ -19,7 +19,7 @@ const clearStore = () => {
 <template>
         <div class="flex flex-col min-h-screen">
             <header class="bg-gray-800 text-white p-3">
-                <h1 class="text-xl" style="float: left">SPLIT ID - DEMO</h1>
+                <h1 class="text-xl" style="float: left">3P ACCOUNT WALLET - DEMO</h1>
                 <UButton @click="clearStore" style="float: right">Clear All</UButton> 
             </header>
             <UProgress
