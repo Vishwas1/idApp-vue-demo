@@ -18,6 +18,7 @@
 
       <UContainer>
         <UCard>
+
           <div class="flex items-center justify-between">
             <ul>
               <li>
@@ -27,7 +28,11 @@
                 WalletAddress: {{ accountAddress }}
               </li>
             </ul>
+            
+            
           </div>
+          <UButton @click="reload" >Reload</UButton>
+          <UButton @click="clear" >Clear</UButton>
         </UCard>
       </UContainer>
     </UCard>
@@ -44,8 +49,13 @@ const accountWalletConnect = ref<AccountWalletWC>()
 const uri = ref("")
 const showLoader = useState('showLoader')
 const ifConnected = ref(false)
+const publicKey = ref(localStorage.getItem('pk'))
+const accountAddress = ref(localStorage.getItem('accountAddress'))
 
-
+const reload = ()=>{
+publicKey.value = localStorage.getItem('pk')
+accountAddress.value = localStorage.getItem('accountAddress')
+}
 function useLocalStorage(key, defaultValue) {
   const storedValue = localStorage.getItem(key)
   const data = ref(storedValue ? storedValue : defaultValue)
@@ -58,13 +68,14 @@ function useLocalStorage(key, defaultValue) {
   return data
 }
 
-const publicKey = useLocalStorage('pk', '')
-const accountAddress = useLocalStorage('accountAddress', '')
+
 
 
 const clear = () => {
   localStorage.removeItem('pk')
   localStorage.removeItem('accountAddress')
+  publicKey.value = ''
+  accountAddress.value = ''
 }
 const chains = ['Ethereum', 'Concordium', 'Bitcoin']
 const toggles = reactive(
