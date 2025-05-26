@@ -33,7 +33,7 @@
 
 <script setup lang="ts">
 import { AccountWallet, AccountWalletWC } from '~/account-wallet';
-import { ConcordiumIDAppSDK, ConcordiumIDAppPoup } from "idapp-app-sdk";
+import { ConcordiumIDAppSDK, ConcordiumIDAppPoup } from "id-app-sdk";
 import { ref, watch } from 'vue'
 const acWallet = ref<AccountWallet>()
 const accountWalletConnect = ref<AccountWalletWC>()

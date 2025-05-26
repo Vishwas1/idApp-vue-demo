@@ -13,7 +13,7 @@ import {
   Status,
   type RecoverAccountResponse,
   type RecoverAccountMsgType,
-} from "idapp-app-sdk";
+} from "id-app-sdk";
 
 const projectId = "8b6c46b9127ce91195745c124870244e";
 
