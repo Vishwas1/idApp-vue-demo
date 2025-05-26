@@ -28,7 +28,7 @@ export class AccountWalletWC {
       metadata: {
         name: "App A",
         description: "dApp initiating connection",
-        url: "phantom.com",
+        url: "localhost:3000",
         icons: ["https://app-a.com/icon.png"],
       },
     });
