@@ -38,6 +38,7 @@ import { ref, watch } from 'vue'
 const acWallet = ref<AccountWallet>()
 const accountWalletConnect = ref<AccountWalletWC>()
 const uri = ref("")
+const deeplink = ref("")
 const showLoader = useState('showLoader')
 const ifConnected = ref(false)
 const publicKey = ref(localStorage.getItem('pk'))
@@ -140,15 +141,31 @@ const wcConnect = async () => {
   await accountWalletConnect.value.connect(ConcordiumIDAppSDK.chainId)
   // showLoader.value = false
   uri.value = "http://localhost:5173/wallet-connect?encodedUri=" + accountWalletConnect.value.uri;
+  deeplink.value = "concordiumidapp://wallet-connect?encodedUri=" + accountWalletConnect.value.uri;
 }
+
+// const openIdapp = async () => {
+//   console.log('Opening openIdapp..')
+//   const width = 400;
+//   const height = 700;
+//   const top = 0;
+//   const left = window.screen.availWidth - width;
+//   window.open(uri.value, 'Idapp', `width=${width},height=${height},top=${top},left=${left}`);
+// }
 
 const openIdapp = async () => {
   console.log('Opening openIdapp..')
-  const width = 400;
-  const height = 700;
-  const top = 0;
-  const left = window.screen.availWidth - width;
-  window.open(uri.value, 'Idapp', `width=${width},height=${height},top=${top},left=${left}`);
+  // On mobile, hand off to the native app:
+  if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+    window.location.href = deeplink.value;
+  } else {
+    // Desktop fallback: show instructions or open a popup for testing
+      const width = 400;
+      const height = 700;
+      const top = 0;
+      const left = window.screen.availWidth - width;
+      window.open(uri.value, 'Idapp', `width=${width},height=${height},top=${top},left=${left}`);
+  }
 }
 
 const onCreateAccount = async () => {
