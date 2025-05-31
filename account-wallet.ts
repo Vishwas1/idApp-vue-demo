@@ -123,8 +123,7 @@ export class AccountWallet {
         const signedCreddepTx: SignedCredentialDeploymentTransaction = await ConcordiumIDAppSDK.signCredentialTransaction(resp.serializedCredentialDeploymentTransaction, wallet.signingKey);
 
         console.log('ConcordiumIDAppSDK.submitCCDTransaction ...')
-        const txHash = await ConcordiumIDAppSDK.submitCCDTransaction(signedCreddepTx.credentialDeploymentTransaction, signedCreddepTx.signature, 'Testnet')
-        console.log({ txHash: txHash.toString() })
+        const txHash: string = await ConcordiumIDAppSDK.submitCCDTransaction(signedCreddepTx.credentialDeploymentTransaction, signedCreddepTx.signature, 'Testnet')
 
         return { account_address: resp.accountAddress, public_key, txHash }
       } else {
