@@ -1,0 +1,1 @@
+import{m as r}from"./MyLYfGhw.js";function n(t){const e=r.createIdRequestV1(JSON.stringify(t));try{return JSON.parse(e).idObjectRequest}catch{throw new Error(e)}}function i(t){const e=r.createIdentityRecoveryRequest(JSON.stringify(t));try{return JSON.parse(e).idRecoveryRequest}catch{throw new Error(e)}}export{i as a,n as c};
