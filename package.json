@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "build": "tsc && nuxt build",
-    "dev": "tsc && nuxt dev",
+    "dev": "tsc && nuxt dev --host 0.0.0.0",
     "generate:gh": "cross-env NODE_ENV=production BASE_URL=/idApp-vue-demo/ nuxi generate",
     "generate:local": "cross-env NODE_ENV=development BASE_URL=/ nuxi generate",
     "preview": "nuxt preview",

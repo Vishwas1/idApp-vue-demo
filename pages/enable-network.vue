@@ -79,10 +79,8 @@ const toggles = reactive(
 
 
 function onToggle(chain, value) {
-
   console.log(`${chain} toggled to: ${value}`)
   // You can add your custom logic here
-
   toggleNetwork()
   toggles[chain] = value
 }
@@ -93,7 +91,6 @@ onMounted(async () => {
   showLoader.value = true
   accountWalletConnect.value = new AccountWalletWC();
   await accountWalletConnect.value.initClient()
-  await wcConnect()
   showLoader.value = false
   acWallet.value = new AccountWallet(accountWalletConnect.value)
   ConcordiumIDAppPoup.closePopup()
@@ -110,7 +107,6 @@ watch(
       console.log('Wallect Connect Session Establised ' + newVal?.topic)
       uri.value = ""
       ifConnected.value = true
-      ConcordiumIDAppPoup.closePopup()
       toggleNetwork()
     }
 
@@ -118,11 +114,12 @@ watch(
   }
 )
 
-const toggleNetwork = () => {
+const toggleNetwork =async () => {
   console.log(accountWalletConnect.value?.session)
   if (!accountWalletConnect.value?.session) {
+    
     ConcordiumIDAppPoup.invokeIdAppDeepLinkPopup({
-      onIdAppPopup: openIdapp
+      onIdAppPopup: connectWalletConnectAndOpenIdApp
     })
     return;
   }
@@ -144,14 +141,14 @@ const wcConnect = async () => {
   deeplink.value = "concordiumidapp://wallet-connect?encodedUri=" + accountWalletConnect.value.uri;
 }
 
-// const openIdapp = async () => {
-//   console.log('Opening openIdapp..')
-//   const width = 400;
-//   const height = 700;
-//   const top = 0;
-//   const left = window.screen.availWidth - width;
-//   window.open(uri.value, 'Idapp', `width=${width},height=${height},top=${top},left=${left}`);
-// }
+
+const connectWalletConnectAndOpenIdApp = async () => {
+  showLoader.value = true
+  await wcConnect()
+  showLoader.value = false
+  openIdapp()
+  ConcordiumIDAppPoup.closePopup()
+}
 
 const openIdapp = async () => {
   console.log('Opening openIdapp..')
@@ -168,19 +165,53 @@ const openIdapp = async () => {
   }
 }
 
+
 const onCreateAccount = async () => {
   console.log('beefore calling createCCDAccount...')
-  const result = await acWallet.value?.createCCDAccount()
-  console.log(result)
-  console.log('after calling createCCDAccount...')
+
+  // send  the request to create the account
+  acWallet.value?.createCCDAccount().then(result => {
+    console.log(result)
+    ConcordiumIDAppPoup.closePopup()
+  })
+
+
+  setTimeout(() => {
+      // open the idapp
+      deeplink.value = "concordiumidapp://id-signup";
+      uri.value = "http://localhost:5173/id-signup";
+      openIdapp()
+      console.log('after calling createCCDAccount...')
+    }, 2000)
+
+
 }
 
 const onRecoverAccount = async () => {
   console.log('Nefore calling recoverCCDAccount...')
   const publicKey = localStorage.getItem('pk')
   if (publicKey) {
-    const result = await acWallet.value?.recoverCCDAccount(publicKey)
-    localStorage.setItem('accountAddress', result?.account_address)
+    
+    // send  the request to recover the account
+    acWallet.value?.recoverCCDAccount(publicKey).then(result => {
+      console.log(result)
+      localStorage.setItem('accountAddress', result?.account_address)
+      //  we can close the poup here
+      ConcordiumIDAppPoup.closePopup()
+      //disconnect the wallet connect session
+      accountWalletConnect.value?.disconnection()
+      
+    })
+
+    setTimeout(() => {
+      // open the idapp
+      deeplink.value = "concordiumidapp://id-signup";
+      uri.value = "http://localhost:5173/id-signup";
+      openIdapp()
+    }, 2000)
+    
+
+    
   } else {
     alert('No pk found')
   }

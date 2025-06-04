@@ -22,6 +22,7 @@ export class AccountWalletWC {
   public session: any = null
   private approval: any
   public uri: string = "";
+  
   async initClient() {
     this.wc_client = await SignClient.init({
       projectId,
@@ -113,6 +114,19 @@ export class AccountWalletWC {
     }
   }
 
+
+  disconnection(){
+    if (!this.wc_client) throw new Error("SDK not initialized");
+
+    if (!this.session) throw new Error("No session found, please connect");
+
+    // Disconnect the session
+    this.wc_client.disconnect({
+      topic: this.session.topic,
+      reason: new Error("User disconnected"),
+    });
+    this.session = null;
+  }
   async request(method: string = "custom_message", chainId: string = "eip155:1", message: any) {
     if (!this.wc_client) throw new Error("SDK not initialized");
 
@@ -183,7 +197,8 @@ export class AccountWallet {
       console.log('Recieved account recovery response address ' + message.accountAddress)
       return { account_address: message.accountAddress }
     } else {
-      throw new Error("") ///// 
+      console.log('Error in account recovery response: ' + recover_acc_resp.status)
+      throw new Error("Could not reciever recovery response") ///// 
     }
   }
 }
