@@ -36,14 +36,13 @@ export class AccountWalletWC {
     // events...
     this.wc_client.on("session_event", (event: any) => {
       const { event: emittedEvent } = event;
-      console.log("🎉 Aaccount wallet received:" + emittedEvent.data.message)
+      console.log("🎉 Aaccount wallet received:" + emittedEvent.data.message);
       alert("🎉 Aaccount wallet received:" + emittedEvent.data.message);
 
       // if (emittedEvent.name === "custom_message_from_b") {
       //   console.log("🎉 App A received:", emittedEvent.data.message);
       // }
     });
-
   }
 
   async connect(chainId: string = "eip155:1") {
@@ -51,7 +50,47 @@ export class AccountWalletWC {
       if (!this.wc_client) throw new Error("SDK not initialized");
 
       // Create pairing URI
-      console.log('Before connecting...')
+      console.log("Before connecting...");
+
+      const pendingRequest = this.wc_client.getPendingSessionRequests();
+      console.log("Pending requests: ", pendingRequest);
+
+      if (pendingRequest.length > 0) {
+        console.log("Pending requests found, rejecting them...");
+        for (const request of pendingRequest) {
+          await this.wc_client.reject({
+            topic: request.topic,
+            reason: new Error("Pending request rejected"),
+          });
+        }
+      }
+      // do same for session
+      const existingSessions = this.wc_client.session.getAll();
+      console.log("Existing sessions: ", existingSessions);
+      if (existingSessions.length > 0) {
+        console.log("Existing sessions found, disconnecting them...");
+        for (const session of existingSessions) {
+          await this.wc_client.disconnect({
+            topic: session.topic,
+            reason: new Error("Existing session disconnected"),
+          });
+        }
+      }
+      // same for session requests
+      console.log(this.wc_client.proposal);
+
+      // const existingSessionRequests = this.wc_client.proposal.getAll();
+      // console.log("Existing session Proposal: ", existingSessionRequests);
+      // if (existingSessionRequests.length > 0) {
+      //   console.log("Existing session requests found, rejecting them...");
+      //   for (const request of existingSessionRequests) {
+      //     await this.wc_client.reject({
+      //       id: request.id,
+      //       reason: new Error("Existing session request rejected"),
+      //     });
+      //   }
+      // }
+
       const { uri, approval } = await this.wc_client.connect({
         requiredNamespaces: {
           concordium: {

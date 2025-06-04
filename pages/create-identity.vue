@@ -66,7 +66,7 @@ import { IdentityProviderIdentityStatus, type IdentityTokenContainer } from '~/t
 import { createCredentialDeploymentKeysAndRandomness, getAccountSigningKey, getCredentialId, getCryptographicParameters, getDefaultTransactionExpiry, getRedirectUri, loop, sendCredentialDeploymentTransaction, sendIdentityRecoveryRequest } from '~/utils';
 import { identityIndex } from '~/constants';
 import { computed } from 'vue';
-import MyIds from '~/components/MyIds.vue'
+import MyIds from '~/components/MyIDs.vue'
 // import { showPopup } from '~/idapp-sdk/idapp-sdk';
 
 
