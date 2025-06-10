@@ -13,6 +13,7 @@ import {
   Status,
   type RecoverAccountResponse,
   type RecoverAccountMsgType,
+  ConcordiumIDAppPoup,
 } from "id-app-sdk";
 
 const projectId = "8b6c46b9127ce91195745c124870244e";
@@ -80,18 +81,8 @@ export class AccountWalletWC {
       // same for session requests
       console.log(this.wc_client.proposal);
 
-      // const existingSessionRequests = this.wc_client.proposal.getAll();
-      // console.log("Existing session Proposal: ", existingSessionRequests);
-      // if (existingSessionRequests.length > 0) {
-      //   console.log("Existing session requests found, rejecting them...");
-      //   for (const request of existingSessionRequests) {
-      //     await this.wc_client.reject({
-      //       id: request.id,
-      //       reason: new Error("Existing session request rejected"),
-      //     });
-      //   }
-      // }
-
+      // Create a new session
+      console.log("Connecting to wallet...");
       const { uri, approval } = await this.wc_client.connect({
         requiredNamespaces: {
           concordium: {
@@ -102,18 +93,19 @@ export class AccountWalletWC {
         },
         pairingTopic: undefined,
       });
-      console.log('After connecting... uri ' + "http://localhost:5173/wallet-connect?encodedUri=" + uri)
       this.uri = uri
+      console.log("Wallet connect URI: ", uri);
+      console.log("Waiting for approval...");
       approval().then((x: unknown) => {
+        console.log("Session approved:", x);
         this.session = x
+        ConcordiumIDAppPoup.closePopup()
       });
-      console.log('After approval...  uri ' + "http://localhost:5173/wallet-connect?encodedUri=" + uri)
-
+      return uri
     } catch (e) {
       console.log(e)
     }
   }
-
 
   disconnection(){
     if (!this.wc_client) throw new Error("SDK not initialized");

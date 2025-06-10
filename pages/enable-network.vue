@@ -9,9 +9,8 @@
         </div>
       </UContainer>
 
-      <UContainer>
+      <!-- <UContainer>
         <UCard>
-
           <div class="flex items-center justify-between">
             <ul>
               <li>
@@ -25,7 +24,7 @@
           <UButton @click="reload" >Reload</UButton>
           <UButton @click="clear" >Clear</UButton>
         </UCard>
-      </UContainer>
+      </UContainer> -->
     </UCard>
   </UContainer>
 
@@ -48,19 +47,6 @@ const reload = ()=>{
 publicKey.value = localStorage.getItem('pk')
 accountAddress.value = localStorage.getItem('accountAddress')
 }
-function useLocalStorage(key, defaultValue) {
-  const storedValue = localStorage.getItem(key)
-  const data = ref(storedValue ? storedValue : defaultValue)
-
-  // Watch the reactive variable and update localStorage when it changes
-  watch(data, (newVal) => {
-    localStorage.setItem(key, newVal)
-  }, { deep: true })
-
-  return data
-}
-
-
 
 
 const clear = () => {
@@ -69,13 +55,13 @@ const clear = () => {
   publicKey.value = ''
   accountAddress.value = ''
 }
-const chains = ['Ethereum', 'Concordium', 'Bitcoin']
+
+  const chains = ['Ethereum', 'Concordium', 'Bitcoin']
 const toggles = reactive(
   chains.reduce((acc, chain) => {
     acc[chain] = false
     return acc
-  }, {})
-)
+  }, {}))
 
 
 function onToggle(chain, value) {
@@ -109,17 +95,19 @@ watch(
       ifConnected.value = true
       toggleNetwork()
     }
-
-    // console.log('User changed', newVal)
   }
 )
 
 const toggleNetwork =async () => {
   console.log(accountWalletConnect.value?.session)
   if (!accountWalletConnect.value?.session) {
+    console.log('No Wallet Connect Session')
+    showLoader.value = true
+    await wcConnect()
+    showLoader.value = false
     
     ConcordiumIDAppPoup.invokeIdAppDeepLinkPopup({
-      onIdAppPopup: connectWalletConnectAndOpenIdApp
+      walletConnectUri: accountWalletConnect.value.uri
     })
     return;
   }
@@ -132,30 +120,32 @@ const toggleNetwork =async () => {
 
 const wcConnect = async () => {
   if (!accountWalletConnect.value) {
+    console.error('WalletConnect client is not initialized')
+    ConcordiumIDAppPoup.closePopup()
     return
   }
-  // showLoader.value = true
   await accountWalletConnect.value.connect(ConcordiumIDAppSDK.chainId)
-  // showLoader.value = false
-  uri.value = "http://localhost:5173/wallet-connect?encodedUri=" + accountWalletConnect.value.uri;
-  deeplink.value = "concordiumidapp://wallet-connect?encodedUri=" + accountWalletConnect.value.uri;
+  // uri.value = "http://localhost:5173/wallet-connect?encodedUri=" + wc_uri;
+  // deeplink.value = "concordiumidapp://wallet-connect?encodedUri=" + wc_uri;
 }
 
 
-const connectWalletConnectAndOpenIdApp = async () => {
-  showLoader.value = true
-  await wcConnect()
-  showLoader.value = false
-  openIdapp()
-  ConcordiumIDAppPoup.closePopup()
-}
+// const connectWalletConnectAndOpenIdApp = async () => {
+//   showLoader.value = true
+//   await wcConnect()
+//   showLoader.value = false
+//   // openIdapp()
+//   ConcordiumIDAppPoup.closePopup()
+// }
 
 const openIdapp = async () => {
   console.log('Opening openIdapp..')
   // On mobile, hand off to the native app:
   if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+    console.log('Opening Idapp on mobile...')
     window.location.href = deeplink.value;
   } else {
+    console.log('Opening Idapp on desktop...')
     // Desktop fallback: show instructions or open a popup for testing
       const width = 400;
       const height = 700;
@@ -172,12 +162,15 @@ const onCreateAccount = async () => {
   // send  the request to create the account
   acWallet.value?.createCCDAccount().then(result => {
     console.log(result)
+    alert('Account created successfully with address: ' + result?.account_address)
     ConcordiumIDAppPoup.closePopup()
   })
 
 
   setTimeout(() => {
       // open the idapp
+      console.log('after calling createCCDAccount...')
+      console.log('Opening Idapp...')
       deeplink.value = "concordiumidapp://id-signup";
       uri.value = "http://localhost:5173/id-signup";
       openIdapp()
@@ -195,6 +188,7 @@ const onRecoverAccount = async () => {
     // send  the request to recover the account
     acWallet.value?.recoverCCDAccount(publicKey).then(result => {
       console.log(result)
+      alert('Account recovered successfully with address: ' + result?.account_address)
       localStorage.setItem('accountAddress', result?.account_address)
       //  we can close the poup here
       ConcordiumIDAppPoup.closePopup()
@@ -204,13 +198,13 @@ const onRecoverAccount = async () => {
     })
 
     setTimeout(() => {
+      console.log('after calling onRecoverAccount...')
+      console.log('Opening Idapp...')
       // open the idapp
       deeplink.value = "concordiumidapp://id-signup";
       uri.value = "http://localhost:5173/id-signup";
       openIdapp()
     }, 2000)
-    
-
     
   } else {
     alert('No pk found')

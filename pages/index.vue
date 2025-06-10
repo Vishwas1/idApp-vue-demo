@@ -19,11 +19,18 @@
   </UContainer>
   </UCard> -->
 
-  <div>Hello</div>
-  
+  <!-- <div>Hello</div> -->
+  <UContainer></UContainer>
+    
 </template>
 
 <script setup lang="ts">
 
+// onMounted(() => {
+//   // redirect to enable network page
+//   // if (window.location.pathname === '/') {
+//     window.location.href = '/enable-network';
+//   // }
+// });
 
 </script>
