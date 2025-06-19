@@ -1,14 +1,18 @@
 <template>
     <UContainer>
-
-          <div class="flex flex-col gap-2">
+  <div class="flex flex-col gap-2">
               <UCard style="width: 100%;">
                <h4>
             challenge:
         </h4>
-        <UTextarea v-model="challenge" />
+         <div class="flex items-center gap-2">
+            <UInput
+            v-model="challenge"
+            placeholder="challenge"
+            class="flex-1"
+            />
         <UButton type="success" @click="generateChallenge">Generate</UButton> 
-        <br>
+        </div>
         <br>
         <h4>Select ZK Statements:</h4>
         <div class="flex flex-col gap-2">
