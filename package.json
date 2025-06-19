@@ -21,20 +21,23 @@
     "@nuxt/scripts": "^0.11.6",
     "@nuxt/test-utils": "^3.17.2",
     "@nuxt/ui": "^2.22.0",
-    "@unhead/vue": "^2.0.8",
-    "eslint": "^9.25.1",
-    "nuxt": "^3.16.2",
-    "vue": "^3.5.13",
-    "vue-router": "^4.5.0",
-    "@walletconnect/sign-client": "^2.20.0",
-    "@walletconnect/types": "^2.20.0",
     "@scure/base": "^1.2.4",
     "@scure/bip32": "^1.6.2",
     "@scure/bip39": "^1.5.4",
-    "id-app-sdk": "git+https://github.com/Concordium/id-app-sdk.git#develop"
+    "@unhead/vue": "^2.0.8",
+    "@walletconnect/qrcode-modal": "^1.8.0",
+    "@walletconnect/sign-client": "2.12.2",
+    "better-sqlite3": "^11.10.0",
+    "eslint": "^9.25.1",
+    "id-app-sdk": "git+https://github.com/Concordium/id-app-sdk.git#develop",
+    "json-bigint": "^1.0.0",
+    "nuxt": "^3.16.2",
+    "vue": "^3.5.13",
+    "vue-router": "^4.5.0"
   },
   "devDependencies": {
+    "@types/json-bigint": "^1",
     "cross-env": "^7.0.3",
     "gh-pages": "^6.3.0"
-  }
+  },
 }

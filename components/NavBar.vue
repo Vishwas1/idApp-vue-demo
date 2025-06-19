@@ -40,5 +40,6 @@ const idcLength = computed(() => {
     // { label: 'IDs (' + idLength.value + ')', to: '/your-ids' },
     // { label: 'Create Account', to: '/create-account' },
     // { label: 'ID Credentials (' + idcLength.value + ')', to: '/your-id-creds' },
+     { label: 'GenerateZk Proof', to: '/create-zkProof' },
   ]
 </script>

@@ -1,4 +1,4 @@
-import type { Network } from '@concordium/web-sdk';
+import type { Network, AtomicStatementV2 } from '@concordium/web-sdk';
 
 export const network: Network = 'Testnet';
 
@@ -23,3 +23,30 @@ export const walletProxyBaseUrl = 'https://wallet-proxy.testnet.concordium.com';
 
 // Base URL for CCDscan. This is used to link to a submitted transaction.
 export const ccdscanBaseUrl = 'https://testnet.ccdscan.io';
+
+// Context string for and generating ZK proofs
+export const CONTEXT_STRING = "CONCORDIUM_COMPLIANT_REWARD_DISTRIBUTION_DAPP";
+
+// ZK statements for the verifiable presentation
+export const ZK_STATEMENTS = [
+    {
+        type: "RevealAttribute",
+        attributeTag: "nationalIdNo",
+    },
+    {
+        type: "RevealAttribute",
+        attributeTag: "nationality",
+    },
+    {
+        type: "AttributeInRange",
+        attributeTag: "dob",
+        lower: "18000101",
+        upper: "20060802",  // Ensures user is over 18 years old
+    },
+    {
+        type: "AttributeNotInSet",
+        attributeTag: "countryOfResidence",
+        set: ["US", "KP", "RU"],  // Not from USA, North Korea, or Russia
+    },
+] as AtomicStatementV2[];
+export const RECENT_BLOCK_DURATION = 10n;

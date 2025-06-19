@@ -1,6 +1,6 @@
 <template>
-    
-    
+
+
     <UContainer>
         <div class="flex flex-col gap-2">
             <UCard style="width: 100%;">
@@ -20,9 +20,9 @@
             <UButton @click="incrementAccountIndex">+{{ account_pk_index }}</UButton>
         </div>
         <!-- PublicKey: <UInput v-model="account_pk" placeholder="Public Key" /><br><UButton @click="incrementAccountIndex">+ Next Account</UButton> -->
-        
+
         SecretKey: <UInput v-model="account_sk" placeholder="Secret Key" disabled />
-   
+
             Select An Identity:
             <USelect option-attribute="label" v-model="selectedIdentityIndex" :options="selectIdentityOptions" label="Select An Identity" placeholder="Choose one" />
             <small>Identity Index: {{  selectedIdentityIndex   }}</small>
@@ -36,8 +36,6 @@
             <div style="max-height: 200px; overflow-y: auto;">
                 <pre>{{ cred_tx }}</pre>
             </div>
-            
-
             <UButton type="success" @click="signSubmitAccountCrednetialTx">Sign & Submit Tx</UButton> 
             <br>
             AccountAddress: <UInput v-model="account_address" placeholder="Account Address" />
@@ -74,7 +72,6 @@ const credIndex = ref(0)
 const nodeAddress = 'https://grpc.testnet.concordium.com';
 const nodePort = 20000;
 const client = new ConcordiumGRPCWebClient(nodeAddress, nodePort);
-
 const idObjects =  computed(() => {
     const idObjectStr = localStorage.getItem('identity-objects')
     let idObjects = [];
