@@ -1,7 +1,6 @@
 import EventEmitter from 'events';
 import type { CredentialStatements, HexString } from '@concordium/web-sdk';
 import { VerifiablePresentation } from '@concordium/web-sdk';
-
 import SignClient from '@walletconnect/sign-client';
 import type { SessionTypes, SignClientTypes } from '@walletconnect/types';
 import QRCodeModal from '@walletconnect/qrcode-modal';

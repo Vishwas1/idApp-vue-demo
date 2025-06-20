@@ -27,6 +27,7 @@
     "@unhead/vue": "^2.0.8",
     "@walletconnect/qrcode-modal": "^1.8.0",
     "@walletconnect/sign-client": "2.12.2",
+    "@walletconnect/types": "2.12.2",
     "better-sqlite3": "^11.10.0",
     "eslint": "^9.25.1",
     "id-app-sdk": "git+https://github.com/Concordium/id-app-sdk.git#develop",
@@ -41,4 +42,5 @@
     "cross-env": "^7.0.3",
     "gh-pages": "^6.3.0"
   },
+  "packageManager": "yarn@1.22.15+sha512.033a040f18f6e7a04e4bf8ea0d7037a63ca19a2e054410543206284c7238108b7612144492f1f4b283d512d9c3f8340825f53947d6ca85c6751fd97cccf59ea0"
 }
