@@ -1,6 +1,6 @@
 import EventEmitter from 'events';
-import type { CredentialStatements, HexString } from '@concordium/web-sdk';
-import { VerifiablePresentation } from '@concordium/web-sdk';
+import type { CredentialStatements, DataBlob, HexString, AccountTransactionSignature } from '@concordium/web-sdk';
+import { VerifiablePresentation, AccountTransactionType, CcdAmount, AccountAddress, } from '@concordium/web-sdk';
 import SignClient from '@walletconnect/sign-client';
 import type { SessionTypes, SignClientTypes } from '@walletconnect/types';
 import QRCodeModal from '@walletconnect/qrcode-modal';
@@ -22,6 +22,7 @@ const walletConnectOpts: SignClientTypes.Options = {
         url: '#',
         icons: ['https://walletconnect.com/walletconnect-logo.png'],
     },
+    logger: "debug"
 };
 export abstract class WalletProvider extends EventEmitter {
     abstract connect(): Promise<string[] | undefined>;
@@ -74,7 +75,6 @@ export class WalletConnectProvider extends WalletProvider {
             const client = await SignClient.init(walletConnectOpts);
             walletConnectInstance = new WalletConnectProvider(client);
         }
-
         return walletConnectInstance;
     }
 
@@ -84,14 +84,13 @@ export class WalletConnectProvider extends WalletProvider {
             ({
                 requiredNamespaces: {
                     [WALLET_CONNECT_SESSION_NAMESPACE]: {
-                        methods: [ID_METHOD],
+                        methods: [ID_METHOD, "sign_and_send_transaction"],
                         chains: [CHAIN_ID],
-                        events: ['accounts_changed'],
+                        events: ['accounts_changed', 'chain_changed'],
+
                     },
                 },
             });
-
-
         // Connecting to an existing pairing; it can be assumed that the account is already available.
         if (!uri) {
             if (this.account == undefined) {
@@ -180,6 +179,97 @@ export class WalletConnectProvider extends WalletProvider {
         const [, , account] = accountString.split(':');
         return account;
     }
+
+    async sendTransaction(senderAddress: string, type: AccountTransactionType, payload: { amount: bigint, toAddress: string }) {
+        // console.log(amountMicroCcd)
+
+        if (!this.topic) {
+            throw new Error('No connection');
+        }
+        try {
+            const transferParams = await this.generateTransferPayload(
+                '3wkLzDB3EbgR4DD3AYWGQNF7wF6DGuLRACsz5KKHJM9frYV1cH',  // sender
+                '3nxAizrPSR1SZvNGjdwh8pDTUAVy66pkDEN61PzL5qk3TLWdj2',  // receiver
+                '100'                                              // amount in microCCD
+            );
+
+            console.log(transferParams, 'transferParams')
+
+
+            let amount = '10'
+            const receiverWalletAddress = '3nxAizrPSR1SZvNGjdwh8pDTUAVy66pkDEN61PzL5qk3TLWdj2'
+            // const params = {
+            //     sender: "3wkLzDB3EbgR4DD3AYWGQNF7wF6DGuLRACsz5KKHJM9frYV1cH",
+            //     type: AccountTransactionType.Transfer,
+            //     payload: {
+            //         amount: CcdAmount.fromMicroCcd(amount ? amount : 0),
+            //         toAddress: AccountAddress.fromBase58(receiverWalletAddress),
+            //     }
+            // }
+            // const payload = {
+            //     // sender: "3wkLzDB3EbgR4DD3AYWGQNF7wF6DGuLRACsz5KKHJM9frYV1cH",
+            //     type: 3, // type = 3
+            //     payload: {
+            //         amount: "100", // must be string
+            //         toAddress: "3nxAizrPSR1SZvNGjdwh8pDTUAVy66pkDEN61PzL5qk3TLWdj2" // must be base58 string
+            //     }
+            // };
+            // console.log(this.client.session.namespaces['ccd'].accounts);
+            const payload = {
+                sender: '3wkLzDB3EbgR4DD3AYWGQNF7wF6DGuLRACsz5KKHJM9frYV1cH',
+                type: AccountTransactionType.Transfer,
+                payload: {
+                    amount: '100',
+                    toAddress: '3nxAizrPSR1SZvNGjdwh8pDTUAVy66pkDEN61PzL5qk3TLWdj2'
+
+                }
+            };
+            const jsonPayload = JSON.stringify(payload)
+            console.log(jsonPayload)
+            const result = await this.client.request<{ transactionHash: string }>({
+                topic: this.topic,
+                request: {
+                    method: 'sign_and_send_transaction',
+                    // params: { sender: '3nxAizrPSR1SZvNGjdwh8pDTUAVy66pkDEN61PzL5qk3TLWdj2', paramsJson: JSON.stringify(payload) },
+                    params: { paramsJson: jsonPayload },
+                },
+                chainId: CHAIN_ID,
+
+            });
+            console.log(result)
+
+            return result.transactionHash;
+        } catch (err) {
+            console.error('Transaction signing failed:', err);
+            // Print detailed error
+            if (typeof err === 'object') {
+                console.error(JSON.stringify(err, null, 2));
+            }
+            throw new Error('Transaction failed');
+        }
+    }
+
+
+    async generateTransferPayload(
+        senderAddress: string,
+        receiverAddress: string,
+        amountMicroCcd: string | number
+    ) {
+        // Ensure all data is correct and stringified
+        const payload = {
+            type: AccountTransactionType.Transfer, // = 3
+            payload: {
+                amount: CcdAmount.fromMicroCcd(amountMicroCcd).toString(), // string
+                toAddress: AccountAddress.fromBase58(receiverAddress).address // base58
+            }
+        };
+
+        return {
+            sender: senderAddress,
+            payloadJson: JSON.stringify(payload)
+        };
+    }
+
 }
 
 //add this class
