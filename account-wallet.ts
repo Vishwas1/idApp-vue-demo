@@ -7,14 +7,16 @@ import {
   type CreateAccountCreationRequestMessage,
   IDAppSdkWallectConnectMethods,
   type CreateAccountCreationResponse,
-  type CreateAccountResponseMsgType,
-  type SignedCredentialDeploymentTransaction,
   type RecoverAccountCreationRequestMessage,
   Status,
   type RecoverAccountResponse,
   type RecoverAccountMsgType,
   ConcordiumIDAppPoup,
+  type SerializedCredentialDeploymentDetails,
+  type CreateAccountResponseMsgType,
+  type SignedCredentialDeploymentTransaction,
 } from "id-app-sdk";
+import type { CredentialDeploymentTransaction, HexString } from "@concordium/web-sdk";
 
 const projectId = "8b6c46b9127ce91195745c124870244e";
 
@@ -139,15 +141,33 @@ export class AccountWalletWC {
 
 export class AccountWallet {
   accountWallet: AccountWalletWC
-  constructor(acwallet: AccountWalletWC) {
+  seed: string
+  constructor(acwallet: AccountWalletWC, seed?: string) {
     this.accountWallet = acwallet
+    this.seed = seed? seed : generateMnemonic(wordlist, 256)
   }
 
-  async createCCDAccount() {
+
+  getWallet(){
+    // const seed = generateMnemonic(wordlist, 256)
+    const wallet = ConcordiumIDAppSDK.generateAccountWithSeedPhrase(this.seed, 'Testnet', 0)
+    return wallet
+  }
+
+  async signTransaction(serializedCredentialDeploymentTransaction: SerializedCredentialDeploymentDetails){
+    const wallet = this.getWallet()
+    return await ConcordiumIDAppSDK.signCredentialTransaction(serializedCredentialDeploymentTransaction, wallet.signingKey);
+  }
+
+  async submitTransaction(credentialDeploymentTransaction: CredentialDeploymentTransaction, signature: HexString){
+    // eslint-disable @typescript-eslint/no-explicit-any //
+    return await ConcordiumIDAppSDK.submitCCDTransaction(credentialDeploymentTransaction, signature, 'Testnet')
+  }
+
+  async createCCDAccount(): Promise<{create_acc_resp?: CreateAccountCreationResponse, public_key?: string, account_address?:string, txHash?:string } | undefined> {
     try {
 
-      const seed = generateMnemonic(wordlist, 256)
-      const wallet = ConcordiumIDAppSDK.generateAccountWithSeedPhrase(seed, 'Testnet', 0)
+      const wallet = this.getWallet()
       const public_key = wallet.publicKey
       localStorage.setItem('pk', public_key)
       
@@ -160,21 +180,23 @@ export class AccountWallet {
         ConcordiumIDAppSDK.chainId,
         new_account_request)
 
-      if (create_acc_resp.status == Status.SUCCESS) {
-        const resp: CreateAccountResponseMsgType = create_acc_resp.message as CreateAccountResponseMsgType;
-        console.log('Recieved account creation response account_address ' + resp.accountAddress)
+      return {create_acc_resp, public_key}
 
-        console.log('ConcordiumIDAppSDK.signCredentialTransaction ...')
-        const signedCreddepTx: SignedCredentialDeploymentTransaction = await ConcordiumIDAppSDK.signCredentialTransaction(resp.serializedCredentialDeploymentTransaction, wallet.signingKey);
+      // if (create_acc_resp.status == Status.SUCCESS) {
+      //   const resp: CreateAccountResponseMsgType = create_acc_resp.message as CreateAccountResponseMsgType;
+      //   console.log('Recieved account creation response account_address ' + resp.accountAddress)
 
-        console.log('ConcordiumIDAppSDK.submitCCDTransaction ...')
-        const txHash = await ConcordiumIDAppSDK.submitCCDTransaction(signedCreddepTx.credentialDeploymentTransaction, signedCreddepTx.signature, 'Testnet')
-        console.log({ txHash: txHash.toString() })
+      //   console.log('ConcordiumIDAppSDK.signCredentialTransaction ...')
+      //   const signedCreddepTx: SignedCredentialDeploymentTransaction = await ConcordiumIDAppSDK.signCredentialTransaction(resp.serializedCredentialDeploymentTransaction, wallet.signingKey);
 
-        return { account_address: resp.accountAddress, public_key, txHash }
-      } else {
-        throw new Error("")
-      }
+      //   console.log('ConcordiumIDAppSDK.submitCCDTransaction ...')
+      //   const txHash = await ConcordiumIDAppSDK.submitCCDTransaction(signedCreddepTx.credentialDeploymentTransaction, signedCreddepTx.signature, 'Testnet')
+      //   console.log({ txHash: txHash.toString() })
+
+      //   return { account_address: resp.accountAddress, public_key, txHash }
+      // } else {
+      //   throw new Error("")
+      // }
     } catch (e) {
       console.log(e)
     }

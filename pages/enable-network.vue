@@ -32,7 +32,7 @@
 
 <script setup lang="ts">
 import { AccountWallet, AccountWalletWC } from '~/account-wallet';
-import { ConcordiumIDAppSDK, ConcordiumIDAppPoup } from "id-app-sdk";
+import { ConcordiumIDAppSDK, ConcordiumIDAppPoup, Status, type CreateAccountResponseMsgType, type SignedCredentialDeploymentTransaction } from "id-app-sdk";
 import { ref, watch } from 'vue'
 const acWallet = ref<AccountWallet>()
 const accountWalletConnect = ref<AccountWalletWC>()
@@ -138,6 +138,15 @@ const wcConnect = async () => {
 //   ConcordiumIDAppPoup.closePopup()
 // }
 
+
+// const verifyIfMobile = () => {
+//   if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+//     return true
+//   } else {
+//     return false 
+//   }
+// }
+
 const openIdapp = async () => {
   console.log('Opening openIdapp..')
   // On mobile, hand off to the native app:
@@ -147,11 +156,11 @@ const openIdapp = async () => {
   } else {
     console.log('Opening Idapp on desktop...')
     // Desktop fallback: show instructions or open a popup for testing
-      const width = 400;
-      const height = 700;
-      const top = 0;
-      const left = window.screen.availWidth - width;
-      window.open(uri.value, 'Idapp', `width=${width},height=${height},top=${top},left=${left}`);
+      // const width = 400;
+      // const height = 700;
+      // const top = 0;
+      // const left = window.screen.availWidth - width;
+      //window.open(uri.value, 'Idapp', `width=${width},height=${height},top=${top},left=${left}`);
   }
 }
 
@@ -160,10 +169,55 @@ const onCreateAccount = async () => {
   console.log('beefore calling createCCDAccount...')
 
   // send  the request to create the account
-  acWallet.value?.createCCDAccount().then(result => {
-    console.log(result)
-    alert('Account created successfully with address: ' + result?.account_address)
-    ConcordiumIDAppPoup.closePopup()
+  acWallet.value?.createCCDAccount().then(async (result) => {
+    if(!result){
+      alert('Error: Could not create account from Idapp')
+      return;
+    }
+    const { create_acc_resp, public_key } = result ; 
+    console.log(public_key)
+    
+    if (create_acc_resp.status == Status.SUCCESS) {
+        const resp: CreateAccountResponseMsgType = create_acc_resp.message as CreateAccountResponseMsgType;
+        console.log('Recieved account creation response account_address ' + resp.accountAddress)
+
+        console.log('ConcordiumIDAppSDK.signCredentialTransaction ...')
+
+        console.log({
+          resp
+        })
+        
+        if(confirm("Signature Request: Please approve to sign the transaction?")){
+const signedCreddepTx: SignedCredentialDeploymentTransaction = await acWallet.value?.signTransaction(
+          resp.serializedCredentialDeploymentTransaction)
+        if(!signedCreddepTx){
+          alert('Error: Could generate signature')
+          return; 
+        }
+
+        console.log({
+          signedCreddepTx
+        })
+        console.log('ConcordiumIDAppSDK.submitCCDTransaction ...')
+        const txHash = await acWallet.value?.submitTransaction(signedCreddepTx.credentialDeploymentTransaction, 
+        signedCreddepTx.signature)
+        console.log({ txHash: txHash?.toString() })
+
+        console.log(result)
+        alert(`Account created successfully with address: ${resp?.accountAddress} \n\nTransaction Hash: ${txHash?.toString()}
+        ` )
+        ConcordiumIDAppPoup.closePopup()
+        } else {
+          alert('Signature request rejected')
+          ConcordiumIDAppPoup.closePopup()
+        }
+        
+    } else {
+        throw new Error("")
+    }
+
+    // alert('Account created successfully with address: ' + resp?.accountAddress)
+    //     ConcordiumIDAppPoup.closePopup()
   })
 
 
