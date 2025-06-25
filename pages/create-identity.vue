@@ -18,89 +18,66 @@
     <UContainer>
         <div class="flex items-center gap-0">
             <UCard style="width: 100%;">
-            <!-- <UButton @click="showPopup" type="danger" class="">Open Popup</UButton> -->
+                <!-- <UButton @click="showPopup" type="danger" class="">Open Popup</UButton> -->
                 IDP Seed:
 
                 <UTextarea v-model="seed" />
-                <UButton type="success" @click="generateSeed" :disabled="showLoader">Generate</UButton> 
+                <UButton type="success" @click="generateSeed" :disabled="showLoader">Generate</UButton>
                 <!-- <UButton :disabled="isSeed" type="success" @click="revocerSeed">Recover</UButton>-->
 
                 <br><br>
                 <h4 v-if="ipList.length > 0">
-                Select an IDP:
+                    Select an IDP:
                 </h4>
                 <!-- <div class="flex items-center gap-2">
                         <UCard v-for="idp in ipList" v-bind:key="idp.ipInfo.ipIdentity" @click="createIdentity(idp)" style="cursor: pointer;"> 
                             <img :src="'data:image/png;base64,'+idp.metadata.icon" style="width: 50px;height: 50px;">    {{ idp.ipInfo.ipDescription.name }}
                         </UCard>
                 </div> -->
-                <USelect 
-                    v-model="ipListSelected"
+                <USelect v-model="ipListSelected"
                     :options="ipList.map((idp, idx) => { return { label: idp.ipInfo.ipDescription.name, value: idx } })"
                     label="Select Identity Provider" />
 
-                <UButton  label="Create Identity" @click="createIdentity" :disabled="showLoader" />   
-                / <UButton  label="Recover Identity" @click="recoverIDApp" :disabled="showLoader" />   
-            </UCard>    
+                <UButton label="Create Identity" @click="createIdentity" :disabled="showLoader" />
+                /
+                <UButton label="Recover Identity" @click="recoverIDApp" :disabled="showLoader" />
+            </UCard>
             <!-- <UCard style="width: 38%;">
                 <h1 class="text-2xl font-bold">Your IDs ({{ idLength  }})</h1>
                 <MyIds/>
             </UCard>     -->
         </div>
-  </UContainer>
+    </UContainer>
 </template>
 
 
-            
-            
-            
-         
+
+
+
+
 
 <script setup lang="ts">
-
-
 import { generateMnemonic, validateMnemonic } from '@scure/bip39';
 import { wordlist } from '@scure/bip39/wordlists/english';
-import { ConcordiumHdWallet, ConcordiumGRPCWebClient, TransactionExpiry, type IdentityProvider, type CredentialInputNoSeed, type CryptographicParameters, type IdentityRequestWithKeysInput, type IdObjectRequestV1, type Versioned, createIdentityRequestWithKeys, type IdentityObjectV1, createCredentialTransactionNoSeed, createIdentityRecoveryRequestWithKeys, type IdentityRecoveryRequestWithKeysInput, type IdRecoveryRequest, CredentialRegistrationId, signCredentialTransaction, getAccountAddress } from '@concordium/web-sdk'
-import { IdentityProviderIdentityStatus, type IdentityTokenContainer } from '~/types';
-import { createCredentialDeploymentKeysAndRandomness, getAccountSigningKey, getCredentialId, getCryptographicParameters, getDefaultTransactionExpiry, getRedirectUri, loop, sendCredentialDeploymentTransaction, sendIdentityRecoveryRequest } from '~/utils';
-import { identityIndex } from '~/constants';
+import { ConcordiumHdWallet, ConcordiumGRPCWebClient, type IdentityProvider, type IdentityRequestWithKeysInput, type IdObjectRequestV1, type Versioned, createIdentityRequestWithKeys,  createIdentityRecoveryRequestWithKeys, type IdentityRecoveryRequestWithKeysInput, type IdRecoveryRequest, CredentialRegistrationId } from '@concordium/web-sdk'
+import { getCredentialId, getCryptographicParameters, getRedirectUri,  sendIdentityRecoveryRequest } from '~/utils';
 import { computed } from 'vue';
-import MyIds from '~/components/MyIDs.vue'
-// import { showPopup } from '~/idapp-sdk/idapp-sdk';
-
-
 
 const showLoader = useState('showLoader')
-
 const network = 'Testnet';
 const route = useRoute()
-const cred_tx = ref({})
-const accountSeed = ref('')
-const account_address = ref('')
-const account_pk = ref('')
-const account_pk_index = ref(0)
-const account_sk = ref('')
-const queryParams = ref({})
-const identityObjectUrl = ref('')
-const identityObjectProxy = ref(null)
 const seed = ref('')
 const isSeed = ref(false)
 const loading = ref(false)
 const ipList = ref<IdentityProviderWithMetadata[]>([])
 const ipListSelected = ref(0)
-const accountAddressProxy = ref({})
 
-// const worker = new Worker(new URL('workers/identity.worker.js', 'http://localhost:3000'));
 const nodeAddress = 'https://grpc.testnet.concordium.com';
 const nodePort = 20000;
-// Base URL for the wallet proxy.
 const walletProxyBaseUrl = 'https://wallet-proxy.testnet.concordium.com';
-// Base URL for CCDscan. This is used to link to a submitted transaction.
-const ccdscanBaseUrl = 'https://testnet.ccdscan.io';
+
 const client = new ConcordiumGRPCWebClient(nodeAddress, nodePort);
 
-//// 
 interface IdentityProviderMetaData {
     issuanceStart: string;
     recoveryStart: string;
@@ -116,7 +93,6 @@ const clearStorage = () => {
     localStorage.clear()
 }
 
-
 onMounted(async () => {
     showLoader.value = true
     const ip_info = await getIdentityProviders()
@@ -125,7 +101,6 @@ onMounted(async () => {
     ipList.value = ip_info
 })
 
-/// ID Wallet
 const generateSeed = async () => {
     clearStorage()
     const mnemonic = generateMnemonic(wordlist, 256);
@@ -133,7 +108,6 @@ const generateSeed = async () => {
     seed.value = mnemonic
     isSeed.value = true
 }
-
 
 const revocerSeed = async () => {
     const mnemonic = seed.value
@@ -149,49 +123,22 @@ const revocerSeed = async () => {
         console.log('Invalid seed phrase');
         isSeed.value = false
     }
-    // const ip_info = await getIdentityProviders()
-    // ipList.value = ip_info
-    // localStorage.setItem('ip-info', JSON.stringify(ip_info))
 }
-/////// /////// /////// /////// 
 
-/// IDP
 const getIdentityProviders = async (): Promise<IdentityProviderWithMetadata[]> => {
-        const response = await fetch(walletProxyBaseUrl + '/v1/ip_info');
-        return response.json();
-    }
-
-const fetchIdentity = async (identityObjectUrl: string): Promise<IdentityObjectV1> => {
-    const intervalMs = 5000;
-    return new Promise(async (resolve, reject) => {
-        await loop(intervalMs, async () => {
-            try {
-                const response = (await (await fetch(identityObjectUrl)).json()) as IdentityTokenContainer;
-                if (IdentityProviderIdentityStatus.Done === response.status) {
-                    resolve(response.token.identityObject.value);
-                    return false;
-                } else if (IdentityProviderIdentityStatus.Error === response.status) {
-                    reject(response.detail);
-                    return false;
-                } else {
-                    return true;
-                }
-            } catch {
-                return true;
-            }
-        });
-    });
+    const response = await fetch(walletProxyBaseUrl + '/v1/ip_info');
+    return response.json();
 }
+
 const selectedIdentityProvider: ComputedRef<IdentityProviderWithMetadata> = computed(() => {
     return ipList.value[ipListSelected.value]
 })
 
-
 const idLength = computed(() => {
     const idObjectStr = localStorage.getItem('identity-objects')
     let idObjects = [];
-    
-    if(idObjectStr){
+
+    if (idObjectStr) {
         idObjects = JSON.parse(idObjectStr)
     } else {
         idObjects = []
@@ -199,17 +146,13 @@ const idLength = computed(() => {
     return idObjects.length
 })
 
-
-/////// /////// /////// /////// 
-
-/// ID App side
 const determineAnonymityRevokerThreshold = (anonymityRevokerCount: number) => {
     return Math.min(anonymityRevokerCount - 1, 255);
 }
 
 const sendIdentityRequest = async (idObjectRequest: Versioned<IdObjectRequestV1>, baseUrl: string) => {
     try {
-        
+
         const params = {
             scope: 'identity',
             response_type: 'code',
@@ -233,28 +176,7 @@ const sendIdentityRequest = async (idObjectRequest: Versioned<IdObjectRequestV1>
         console.log(e.message);
         alert('An error occurred while sending the identity request. Maybe identity exists already. Try Recover Account');
         return null;
-    } 
-}
-
-const getLatestIdentityIndex = () => {
-    const idObjectStr = localStorage.getItem('identity-objects')
-    let idObjects = [];
-    
-    if(idObjectStr){
-        idObjects = JSON.parse(idObjectStr)
-    } else {
-        idObjects = []
     }
-    return idObjects.length
-}
-
-const getLatestCredentialNumber = () => {
-    if(localStorage.getItem('cred-number') == null){
-        localStorage.setItem('cred-number', '0')
-    }
-    const index = parseInt(localStorage.getItem('cred-number') || '0')
-    localStorage.setItem('cred-number', (index + 1).toString())
-    return index
 }
 
 const createIdentity = async () => {
@@ -263,8 +185,8 @@ const createIdentity = async () => {
         showLoader.value = true
         const wallet = ConcordiumHdWallet.fromSeedPhrase(seed.value, network);
         const identityProviderIndex = selectedIdentityProvider.value.ipInfo.ipIdentity
-        
-        
+
+
         const identityIndex = idLength.value // getLatestIdentityIndex()
 
         const idCredSec = wallet.getIdCredSec(identityProviderIndex, identityIndex).toString('hex');
@@ -292,7 +214,7 @@ const createIdentity = async () => {
             return;
         }
         if (!url?.includes(getRedirectUri())) {
-            window.open(url,"_blank");
+            window.open(url, "_blank");
         } else {
             window.alert('An error occurred during the identity creation.');
         }
@@ -309,20 +231,6 @@ watch(() => route.fullPath, () => {
     if (isSeed.value) {
         revocerSeed()
     }
-    // // Parse the query parameters every time the route changes
-    // queryParams.value = Object.fromEntries(new URLSearchParams(route.fullPath).entries())
-    // if (queryParams.value["/demo#code_uri"]) {
-    //     identityObjectUrl.value = queryParams.value["/demo#code_uri"]
-    //     fetchIdentity(identityObjectUrl.value).then((identityObject) => {
-    //         console.log('Identity Object:', identityObject);
-    //         localStorage.setItem('identity-object', JSON.stringify(identityObject));
-    //         identityObjectProxy.value = identityObject
-    //         // Handle the identity object as needed
-    //     }).catch((error) => {
-    //         console.error('Error fetching identity object:', error);
-    //     });
-    // }
-
 }, { immediate: true })
 
 const recoverIDApp = async (public_key) => {
@@ -349,273 +257,84 @@ const recoverIDApp = async (public_key) => {
 const recoverIdentity = async () => {
     loading.value = false
     const identityProviderIndex = selectedIdentityProvider.value.ipInfo.ipIdentity
-    
-    
+
+
     // const identityIndex = 0 /// 0...infinity
     const cryptographicParameters = await getCryptographicParameters()
     let identityObjects = []
-    
-    // localStorage.getItem('identity-objects')
-    //     if(!identityObjects){
-    //         identityObjects = []
-    //     } else {
-    //         identityObjects = JSON.parse(identityObjects)
-    //     }
-        const wallet = ConcordiumHdWallet.fromSeedPhrase(seed.value, network);
 
-        for(let identityIndex = 0; identityIndex <= 20; identityIndex++){
-        
-                // ID wallet (from id seed)
-                const idCredSec = wallet.getIdCredSec(identityProviderIndex, identityIndex).toString('hex');
-                const identityRequestInput: IdentityRecoveryRequestWithKeysInput = {
-                    idCredSec,
-                    ipInfo: selectedIdentityProvider.value.ipInfo,
-                    globalContext: cryptographicParameters,
-                    timestamp: Math.floor(Date.now() / 1000),
-                };
-                const identityRecoveryRequest: Versioned<IdRecoveryRequest> = createIdentityRecoveryRequestWithKeys(identityRequestInput)
-            try{
-                const url = await sendIdentityRecoveryRequest(identityRecoveryRequest, selectedIdentityProvider.value.metadata.recoveryStart);
-            
-                console.log(url)
-                const response = await fetch(url);
-                if (response.ok) {
-                    const identity = await response.json();
-                    identityObjects.push(identity.value)
-                    //identityObjectProxy.value = identity.value
-                }
-            }catch(e){
-                console.error(e.message)
-                console.log('continuing... identityIndex = ' + identityIndex)
+    const wallet = ConcordiumHdWallet.fromSeedPhrase(seed.value, network);
+
+    for (let identityIndex = 0; identityIndex <= 20; identityIndex++) {
+
+        // ID wallet (from id seed)
+        const idCredSec = wallet.getIdCredSec(identityProviderIndex, identityIndex).toString('hex');
+        const identityRequestInput: IdentityRecoveryRequestWithKeysInput = {
+            idCredSec,
+            ipInfo: selectedIdentityProvider.value.ipInfo,
+            globalContext: cryptographicParameters,
+            timestamp: Math.floor(Date.now() / 1000),
+        };
+        const identityRecoveryRequest: Versioned<IdRecoveryRequest> = createIdentityRecoveryRequestWithKeys(identityRequestInput)
+        try {
+            const url = await sendIdentityRecoveryRequest(identityRecoveryRequest, selectedIdentityProvider.value.metadata.recoveryStart);
+
+            console.log(url)
+            const response = await fetch(url);
+            if (response.ok) {
+                const identity = await response.json();
+                identityObjects.push(identity.value)
+                //identityObjectProxy.value = identity.value
             }
-            
+        } catch (e) {
+            console.error(e.message)
+            console.log('continuing... identityIndex = ' + identityIndex)
         }
 
+    }
 
-    localStorage.setItem('identity-objects', JSON.stringify(identityObjects, (key, value) =>typeof value === "bigint" ? Number(value) : value));
 
-    
-    
-    
- }
+    localStorage.setItem('identity-objects', JSON.stringify(identityObjects, (key, value) => typeof value === "bigint" ? Number(value) : value));
 
-// // Recover form blockhain
-// const recoverIdentityCredentials = async () => {
-//     loading.value = false
-//     // const credNumber = 0; /// 0...20
-//     const cryptographicParameters = await getCryptographicParameters()
-//     let identityCredentials = localStorage.getItem('identity-credentials')
-//     if(!identityCredentials){
-//         identityCredentials = []
-//     } else {
-//         identityCredentials = JSON.parse(identityCredentials)
-//     }
-//     for(let i = 0; i < 20; i++){
-//         const credId = getCredentialId(seed.value, selectedIdentityProvider.value.ipInfo.ipIdentity, cryptographicParameters, i);
-//         const accountInfo = await client.getAccountInfo(CredentialRegistrationId.fromHexString(credId));
-//         identityCredentials.push(accountInfo)
-//         // accountAddressProxy.value = accountInfo.accountAddress
-//     }
-// }
 
+
+
+}
 
 const recoverIdentityCredentials = async () => {
-    
-    try{
+
+    try {
         const idSeed = seed.value
-        // const credNumber = 0; /// 0...20
         const cryptographicParameters = await getCryptographicParameters()
         let identityCredentials = []
-        //localStorage.getItem('identity-credentials')
-        // if(!identityCredentials){
-        //     identityCredentials = []
-        // } else {
-        //     identityCredentials = JSON.parse(identityCredentials)
-        // }01...5...10
-        for(let i = 0; i < 20; i++){
+        
+        for (let i = 0; i < 20; i++) {
             const credId = getCredentialId(idSeed, selectedIdentityProvider.value.ipInfo.ipIdentity, cryptographicParameters, i);
-            try{
-                const accountInfo:any = await client.getAccountInfo(CredentialRegistrationId.fromHexString(credId));
+            try {
+                const accountInfo: any = await client.getAccountInfo(CredentialRegistrationId.fromHexString(credId));
                 accountInfo['credNumber'] = i;
                 accountInfo['identityIndex'] = 0; //hardcoded for now
                 accountInfo['status'] = 'confirmed'
                 identityCredentials.push(accountInfo)
-            }catch(e){
+            } catch (e) {
                 console.error(e)
             }
             // accountAddressProxy.value = accountInfo.accountAddress
         }
-        localStorage.setItem('identity-credentials', JSON.stringify(identityCredentials, (key, value) =>typeof value === "bigint" ? Number(value) : value));
-        }catch(e){
-            console.error(e)
-        }
-        
-}
-
-// const searchAccountAddressinLocal = (public_key, credNumber) => {
-//     return {
-//         accountAddressProxy
-//     }
-// }
-
-
-const createAccountWithIdentity = async (public_key: string, credNumber: number = 0) => {
-    const global = await getCryptographicParameters();
-    const identityIndex = 0
-    // const credNumber = 0
-    const idSeed = seed.value
-    
-    console.log('Account Seed:', idSeed);
-    console.log({credNumber})
-
-    
-    const { idCredSec, prfKey, attributeRandomness, blindingRandomness, credentialPublicKeys } =
-        createCredentialDeploymentKeysAndRandomness(
-            // seed.value,
-            idSeed,
-            network,
-            selectedIdentityProvider.value.ipInfo.ipIdentity,
-            identityIndex,
-            credNumber,
-            public_key
-        );
-    console.log({ idCredSec, prfKey, attributeRandomness, blindingRandomness, credentialPublicKeys });
-    const credentialInput: CredentialInputNoSeed = {
-        revealedAttributes: [],
-        idObject: identityObjectProxy.value as unknown as IdentityObjectV1,
-        globalContext: global,
-        credNumber,
-        ipInfo: selectedIdentityProvider.value.ipInfo,
-        arsInfos: selectedIdentityProvider.value.arsInfos,
-        attributeRandomness,
-        credentialPublicKeys,
-        idCredSec,
-        prfKey,
-        sigRetrievelRandomness: blindingRandomness,
-    };
-    const expiry = getDefaultTransactionExpiry();
-    const credentialTransaction = createCredentialTransactionNoSeed(credentialInput, expiry);
-    console.log('Credential Transaction:', credentialTransaction);
-    
-
-    const accountAddress = getAccountAddress(credentialTransaction.unsignedCdi.credId);
-    console.log(accountAddress);
-    accountAddressProxy.value = accountAddress.address
-
-    return {
-        credentialTransaction,
-        accountAddress, 
+        localStorage.setItem('identity-credentials', JSON.stringify(identityCredentials, (key, value) => typeof value === "bigint" ? Number(value) : value));
+    } catch (e) {
+        console.error(e)
     }
-}
-/////// /////// /////// /////// 
 
-
-
-/// Account Wallet side
-
-/**
- * Increment the account index
- */
-const incrementAccountIndex = () => {
-    account_pk_index.value = account_pk_index.value + 1
-    generateAccountKeys()
 }
 
-/**
- * Generate new account seed phrase and store it in local storage
- */
-const generateAccountSeed = async () => {
-    const mnemonic = generateMnemonic(wordlist, 256);
-    localStorage.setItem('account-seed-phrase', mnemonic);
-    accountSeed.value = mnemonic
-    generateAccountKeys()
-}
-
-/**
- * * Generate a new account wallet and derive the public key and signing key
- */
-const generateAccountKeys = () => {
-    // generate a new seed phrase for the account wallet
-    const accountSeedPhrase = localStorage.getItem('account-seed-phrase') || "birth forget knife tube frame mistake month pair that viable gentle repair casino buzz grid team tenant drip year copy dice steel jaguar fruit"// generateMnemonic(wordlist, 256)
-    
-
-    // derive the public key for the account
-    const identityProviderIdentity = 0 
-    const accountwallet = ConcordiumHdWallet.fromSeedPhrase(accountSeedPhrase, network);
-    const publicKey = accountwallet.getAccountPublicKey(
-        identityProviderIdentity,  // identity provider index
-        0,  // identity index
-        account_pk_index.value // credential index
-    ).toString('hex');
-
-    
-    const signingKey = getAccountSigningKey(accountSeedPhrase, identityProviderIdentity, account_pk_index.value);
-    account_pk.value = publicKey
-    account_sk.value = signingKey
-
-    account_address.value =""
-
-cred_tx.value = {}
-    return {
-        publicKey, 
-        signingKey
-    }
-} 
-
-/**
- * Request the account credential transaction from the ID App
- */
-const requestAccountCrednetialTx = async () => {
-    // const {publicKey }  = generateAccountKeys()
-
-    // request idApp to give me the credential deployment transaction and wallet address
-    const { credentialTransaction, accountAddress } =  await createAccountWithIdentity(account_pk.value, account_pk_index.value); 
-    cred_tx.value = credentialTransaction;
-    account_address.value = accountAddress.address;
-
-    /// 
-
-    return {
-        credentialTransaction, accountAddress
-    }
-}  
-
-/**
- * Submit New Credential Transaction
- */
-const signSubmitAccountCrednetialTx = async () => {
-    try{
-         // const  { credentialTransaction, accountAddress } = await requestAccountCrednetialTx();
-    
-        const credentialTransaction = cred_tx.value
-        
-        console.log(credentialTransaction)
-
-        
-        // Sign the create account credential transaction
-        const signature = await signCredentialTransaction(credentialTransaction, account_sk.value);
-
-        // Send the transaction to the network
-        const txn = await sendCredentialDeploymentTransaction(credentialTransaction, signature);
-        
-
-        const transactionUrl = `${ccdscanBaseUrl}/?dcount=1&dentity=transaction&dhash=${txn.toString()}`;
-        console.log('Transaction URL:', transactionUrl);
-        alert('Transaction successfully submitted. Press ok to check the transaction on CCDscan');
-        window.open(transactionUrl, "_blank");
-
-    }catch(e){
-        alert('Error: ' + e.message)
-    }
-   
-}
-/////// /////// /////// /////// 
 </script>
 <style scoped>
 .left-card {
-  width: 70%;
+    width: 70%;
 }
+
 .right-card {
-  width: 30%;
+    width: 30%;
 }
 </style>

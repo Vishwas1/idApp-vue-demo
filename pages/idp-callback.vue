@@ -1,13 +1,5 @@
 <template>
     <UContainer>
-        <!-- <UCard  v-if="ifAccountSuccess" class="flex flex-col items-center justify-center">
-            <UIcon name="hugeicons:checkmark-circle-03" class="size-12" style="color: green" />
-            <h1>Identity Creation Successful!</h1>
-        </UCard>
-        <UCard  v-else-if="!ifIdCreationInProgress && !ifAccountSuccess" class="flex flex-col items-center justify-center">
-            <UIcon name="material-symbols:chat-error-outline-rounded" style="color: red" class="size-12"/>
-            <h1>Identity Creation Failed!</h1>
-        </UCard> -->
     </UContainer>
 </template>
 
@@ -45,9 +37,6 @@ const fetchIdentity = async (identityObjectUrl: string): Promise<IdentityObjectV
 onMounted(() => {
     // Parse the query parameters every time the route changes
     queryParams.value = Object.fromEntries(new URLSearchParams(route.fullPath).entries())
-    console.log("queryParams", queryParams.value)
-    console.log("queryParams", queryParams.value["/idp-callback#code_uri"])
-    console.log("queryParams", queryParams.value["/idp-callback/#code_uri"])
     if (queryParams.value["/idp-callback#code_uri"] || queryParams.value["/idp-callback/#code_uri"]) {
         ifIdCreationInProgress.value = true
         const idObjectUrl = queryParams.value["/idp-callback#code_uri"] || queryParams.value["/idp-callback/#code_uri"]
