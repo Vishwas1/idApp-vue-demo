@@ -1,43 +1,41 @@
 <template>
-    <UContainer>
-      <UHorizontalNavigation
-        :links="links"
-        class="border-b"
-      />
-    </UContainer>
-  </template>
+  <UContainer>
+    <UHorizontalNavigation :links="links" class="border-b" />
+  </UContainer>
+</template>
   
   <script setup>
-  const idLength = computed(() => {
-    const idObjectStr = localStorage.getItem('identity-objects')
-    let idObjects = [];
-    
-    if(idObjectStr){
-        idObjects = JSON.parse(idObjectStr)
-    } else {
-        idObjects = []
-    }
-    return idObjects.length
-})
+const idLength = computed(() => {
+  const idObjectStr = localStorage.getItem("identity-objects");
+  let idObjects = [];
 
-
+  if (idObjectStr) {
+    idObjects = JSON.parse(idObjectStr);
+  } else {
+    idObjects = [];
+  }
+  return idObjects.length;
+});
 
 const idcLength = computed(() => {
-    const idObjectStr = localStorage.getItem('identity-credentials')
-    let idObjects = [];
-    
-    if(idObjectStr){
-        idObjects = JSON.parse(idObjectStr)
-    } else {
-        idObjects = []
-    }
-    return idObjects.length
-})
+  const idObjectStr = localStorage.getItem("identity-credentials");
+  let idObjects = [];
 
-  const links = [
-    { label: 'Enable Network', to: '/enable-network' },
-    { label: 'GenerateZk Proof', to: '/create-zkProof' },
-    { label: 'Pay and verify', to: '/pay-verify' },
+  if (idObjectStr) {
+    idObjects = JSON.parse(idObjectStr);
+  } else {
+    idObjects = [];
+  }
+  return idObjects.length;
+});
 
-  ]
+const links = [
+  { label: "Enable Network", to: "/enable-network" },
+  //{ label: 'Create ID', to: '/create-identity' },
+  //{ label: 'IDs (' + idLength.value + ')', to: '/your-ids' },
+  //{ label: 'Create Account', to: '/create-account' },
+  //{ label: 'ID Credentials (' + idcLength.value + ')', to: '/your-id-creds' },
+  { label: "GenerateZk Proof", to: "/create-zkProof" },
+  { label: "Pay and verify", to: "/pay-verify" },
+];
 </script>

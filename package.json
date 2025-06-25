@@ -12,7 +12,7 @@
     "deploy": "./deploy.sh"
   },
   "dependencies": {
-    "@concordium/web-sdk": "^9.1.0",
+    "@concordium/web-sdk": "^10.0.0-alpha.8",
     "@nuxt/content": "^3.4.0",
     "@nuxt/eslint": "^1.3.0",
     "@nuxt/fonts": "^0.11.1",
@@ -41,6 +41,5 @@
     "@types/json-bigint": "^1",
     "cross-env": "^7.0.3",
     "gh-pages": "^6.3.0"
-  },
-  "packageManager": "yarn@1.22.15+sha512.033a040f18f6e7a04e4bf8ea0d7037a63ca19a2e054410543206284c7238108b7612144492f1f4b283d512d9c3f8340825f53947d6ca85c6751fd97cccf59ea0"
+  }
 }
