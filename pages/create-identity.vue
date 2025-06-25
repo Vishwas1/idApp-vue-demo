@@ -59,8 +59,8 @@
 <script setup lang="ts">
 import { generateMnemonic, validateMnemonic } from '@scure/bip39';
 import { wordlist } from '@scure/bip39/wordlists/english';
-import { ConcordiumHdWallet, ConcordiumGRPCWebClient, type IdentityProvider, type IdentityRequestWithKeysInput, type IdObjectRequestV1, type Versioned, createIdentityRequestWithKeys,  createIdentityRecoveryRequestWithKeys, type IdentityRecoveryRequestWithKeysInput, type IdRecoveryRequest, CredentialRegistrationId } from '@concordium/web-sdk'
-import { getCredentialId, getCryptographicParameters, getRedirectUri,  sendIdentityRecoveryRequest } from '~/utils';
+import { ConcordiumHdWallet, ConcordiumGRPCWebClient, type IdentityProvider, type IdentityRequestWithKeysInput, type IdObjectRequestV1, type Versioned, createIdentityRequestWithKeys, createIdentityRecoveryRequestWithKeys, type IdentityRecoveryRequestWithKeysInput, type IdRecoveryRequest, CredentialRegistrationId } from '@concordium/web-sdk'
+import { getCredentialId, getCryptographicParameters, getRedirectUri, sendIdentityRecoveryRequest } from '~/utils';
 import { computed } from 'vue';
 
 const showLoader = useState('showLoader')
@@ -307,7 +307,7 @@ const recoverIdentityCredentials = async () => {
         const idSeed = seed.value
         const cryptographicParameters = await getCryptographicParameters()
         let identityCredentials = []
-        
+
         for (let i = 0; i < 20; i++) {
             const credId = getCredentialId(idSeed, selectedIdentityProvider.value.ipInfo.ipIdentity, cryptographicParameters, i);
             try {
