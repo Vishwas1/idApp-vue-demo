@@ -96,11 +96,23 @@ export class AccountWalletWC {
         pairingTopic: undefined,
       });
       this.uri = uri
+
+
+
+      // if (this.uri) {
+      //   console.log({pairing: this.wc_client.pairing})
+      //   const pairing = this.wc_client.pairing.getPairings().find((p: any) => p.uri === uri);
+      //   console.log("Expiry:", pairing?.expiry); // in seconds since epoch
+      // }
+
+
+
       console.log("Wallet connect URI: ", uri);
       console.log("Waiting for approval...");
       approval().then((x: unknown) => {
         console.log("Session approved:", x);
         this.session = x
+        console.log(this.session.getAll())
         ConcordiumIDAppPoup.closePopup()
       });
       return uri
