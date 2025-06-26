@@ -34,11 +34,8 @@
         <br />
         <UButton type="success" @click="simpleCCDTransfer">Pay CCD </UButton>
         <div>CCD TransactionHas: {{ ccdTransactionHash }}</div>
-
         <UButton type="success" @click="PLTTransfer">Pay PLT</UButton>
         <div>PLT TransactionHas: {{ pltTransactionHash }}</div>
-
-        
       </UCard>
     </div>
   </UContainer>
@@ -55,14 +52,13 @@ import {
   Energy,
   AccountAddress,
   ConcordiumGRPCWebClient,
-  serializeAccountTransactionPayload
+  serializeAccountTransactionPayload,
 } from "@concordium/web-sdk";
 import {
   Cbor,
   CborMemo,
   TokenId,
   TokenAmount as TokenAmountPlt,
-  V1
 } from "@concordium/web-sdk/plt";
 import { ref } from "vue";
 import { WalletConnectProvider, WalletProvider } from "../wallet-connect";
@@ -72,11 +68,9 @@ const activeProvider = ref<WalletProvider | null>(null);
 const receiverWalletAddress = ref("");
 const amount = ref("");
 const ccdTransactionHash = ref("");
-const pltTransactionHash= ref("");
+const pltTransactionHash = ref("");
 const rawMemo = ref("");
 import { Buffer } from "buffer";
-console.log(Buffer.from("hello").toString("hex"));
-
 /**
  * * Connect Browser wallet a proof Request
  */
@@ -175,11 +169,8 @@ async function simpleCCDTransfer() {
 
 async function PLTTransfer() {
   let memoInput = rawMemo.value?.trim();
-  let memoString;
   let payload;
-  let type;
   const decimal = 6;
- 
   const ops = [
     {
       transfer: {
@@ -187,33 +178,30 @@ async function PLTTransfer() {
           value: parseTokenAmount(amount.value, decimal).toString(),
           decimals: decimal,
         }),
-        recipient: receiverWalletAddress.value,
-        memo: memoString ? CborMemo.fromString(memoString): undefined
+        recipient: AccountAddress.fromBase58(receiverWalletAddress.value),
+        memo: memoInput ? CborMemo.fromString(memoInput) : undefined,
       },
     },
   ];
-    payload = {
-      tokenSymbol: TokenId.fromString("0xbogac"),
-      operations: Cbor.encode(ops),
-    };
-    let provider;
-    if (selectedWalletType.value == "browser") {
-      provider = window.concordium;
-    } else {
-      provider = activeProvider.value;
-    }
-    const result = await provider.sendTransaction(
-      connectedAccount.value,
-      AccountTransactionType.TokenHolder,
-      payload
-    );
-  console.log(result)
+  payload = {
+    tokenSymbol: TokenId.fromString("0xbogac"),
+    operations: Cbor.encode(ops),
+  };
+
+  let provider;
+  if (selectedWalletType.value == "browser") {
+    provider = window.concordium;
+  } else {
+    provider = activeProvider.value;
+  }
+  const result = await provider.sendTransaction(
+    connectedAccount.value,
+    AccountTransactionType.TokenHolder,
+    payload
+  );
+  console.log(result);
   pltTransactionHash.value = result;
 }
-
- 
-
-
 
 function parseTokenAmount(amount: string, decimals = 0): bigint {
   const sanitizedAmount = removeNumberGrouping(amount);
@@ -227,4 +215,3 @@ function parseTokenAmount(amount: string, decimals = 0): bigint {
 }
 const removeNumberGrouping = (amount: string) => amount.replace(/,/g, "");
 </script>
-
