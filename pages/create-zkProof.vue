@@ -31,7 +31,9 @@
           <h4>
               Proof Request:
           </h4>
-          <pre>{{ proofRequestJson }}</pre>
+           <div style="max-height: 200px; overflow-y: auto;">
+            <pre>{{ proofRequestJson }}</pre>
+        </div>
           <br>
         <div>ConnectedAccount: {{ connectedAccount }}</div>
           <div class="flex items-center gap-2">
