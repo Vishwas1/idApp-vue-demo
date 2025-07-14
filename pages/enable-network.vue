@@ -31,9 +31,11 @@
 </template>
 
 <script setup lang="ts">
-import { AccountWallet, AccountWalletWC } from '~/account-wallet';
+import { AccountWallet } from '~/account-wallet';
 import { ConcordiumIDAppSDK, ConcordiumIDAppPoup, Status, type CreateAccountResponseMsgType, type SignedCredentialDeploymentTransaction } from "id-app-sdk";
 import { ref, watch } from 'vue'
+import { AccountWalletWC } from '~/wallet-connect';
+import WalletConnect from '@walletconnect/client';
 const acWallet = ref<AccountWallet>()
 const accountWalletConnect = ref<AccountWalletWC>()
 const uri = ref("")
@@ -80,6 +82,38 @@ onMounted(async () => {
   showLoader.value = false
   acWallet.value = new AccountWallet(accountWalletConnect.value)
   ConcordiumIDAppPoup.closePopup()
+
+  
+
+  const connector = new WalletConnect({ uri: 'wc:cf19acae-e965-4b02-83cf-f8e4568ef931@1?bridge=https%3A%2F%2F0.bridge.walletconnect.org&key=d15044d325a73fa502066a745d5be4f3ab1d2a9fd4f586dced5677f8cdb2b1af'});
+      connector.on("session_request", async (error, payload) => {
+        if (error) throw error;
+
+        console.log("🔌 Session request received:", payload);
+
+        const peerMeta = payload.params[0].peerMeta;
+        console.log("DApp Info:", peerMeta);
+
+        // Respond to the session request (approve)
+        const accounts = ["0xYourWalletAddress"];
+        const chainId = 1; // or the relevant chain/network ID
+
+        await connector.approveSession({
+          accounts,
+          chainId,
+        });
+
+        console.log("✅ Session approved");
+      });
+
+      connector.on("connect", (error, payload) => {
+    if (error) throw error;
+    console.log("🔗 Connected:", payload.params[0]);
+  });
+
+   connector.on("disconnect", () => {
+    console.log("❌ Disconnected");
+  });
 })
 
 watch(
@@ -103,12 +137,22 @@ const toggleNetwork =async () => {
   if (!accountWalletConnect.value?.session) {
     console.log('No Wallet Connect Session')
     showLoader.value = true
-    await wcConnect()
+    const URI = await wcConnect()
+    console.log("toggleNetwork:: wallet connect URI: " + URI)
     showLoader.value = false
     
-    ConcordiumIDAppPoup.invokeIdAppDeepLinkPopup({
-      walletConnectUri: accountWalletConnect.value.uri
-    })
+    setTimeout(() => {
+      console.log("toggleNetwork:: accountWalletConnect.value.uri: " + accountWalletConnect.value.uri)
+      // walletConnectUri: 'wc:beb4c642a0b0835c0e5be48343bdb440d95013ebcf65e86758bbe83f8be188d3@2?relay-protocol=irn&symKey=4ba88ca79e4427ecc5269f80c7a818e40835c1c2daf0a8d8408eb1d53c8a7ddc&expiryTimestamp=1751959427'
+
+
+      
+
+    //   ConcordiumIDAppPoup.invokeIdAppDeepLinkPopup({
+    //   walletConnectUri: 'wc:cf19acae-e965-4b02-83cf-f8e4568ef931@1?bridge=https%3A%2F%2F0.bridge.walletconnect.org&key=d15044d325a73fa502066a745d5be4f3ab1d2a9fd4f586dced5677f8cdb2b1af',
+
+    // })
+    }, 2000)
     return;
   }
 
@@ -124,7 +168,9 @@ const wcConnect = async () => {
     ConcordiumIDAppPoup.closePopup()
     return
   }
-  await accountWalletConnect.value.connect(ConcordiumIDAppSDK.chainId)
+  const URI = await accountWalletConnect.value.connect(ConcordiumIDAppSDK.chainId)
+  console.log('WalletConnect URI: ' + URI)
+  return URI
   // uri.value = "http://localhost:5173/wallet-connect?encodedUri=" + wc_uri;
   // deeplink.value = "concordiumidapp://wallet-connect?encodedUri=" + wc_uri;
 }
