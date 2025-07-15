@@ -47,6 +47,31 @@ export class AccountWalletWC {
       //   console.log("🎉 App A received:", emittedEvent.data.message);
       // }
     });
+
+    this.printPairing()
+    this.printSessions()
+  }
+
+  getListOfPairing(){
+    return this.wc_client.pairing.getAll()
+  }
+
+  getListOfSessions(){
+    return this.wc_client.session.getAll()
+  }
+
+  getMostNewSession(){
+    const sessions = this.getListOfSessions()
+    if(sessions && sessions.length > 0){
+      const now = Math.floor(Date.now() / 1000); // current time in UNIX seconds
+      // Filter out expired sessions
+      const validSessions = sessions.filter((session: any) => session.expiry > now);
+      if (validSessions.length === 0) return null;
+      validSessions.sort((a: any, b: any) => b.expiry - a.expiry); //sort by expiry time latest ex
+      return validSessions[0]
+    } else {
+      return null
+    }
   }
 
   async connect(chainId: string = "eip155:1") {
@@ -59,31 +84,36 @@ export class AccountWalletWC {
       const pendingRequest = this.wc_client.getPendingSessionRequests();
       console.log("Pending requests: ", pendingRequest);
 
-      if (pendingRequest.length > 0) {
-        console.log("Pending requests found, rejecting them...");
-        for (const request of pendingRequest) {
-          await this.wc_client.reject({
-            topic: request.topic,
-            reason: new Error("Pending request rejected"),
-          });
-        }
-      }
+      // if (pendingRequest.length > 0) {
+      //   console.log("Pending requests found, rejecting them...");
+      //   for (const request of pendingRequest) {
+      //     await this.wc_client.reject({
+      //       topic: request.topic,
+      //       reason: new Error("Pending request rejected"),
+      //     });
+      //   }
+      // }
       // do same for session
-      const existingSessions = this.wc_client.session.getAll();
-      console.log("Existing sessions: ", existingSessions);
-      if (existingSessions.length > 0) {
-        console.log("Existing sessions found, disconnecting them...");
-        for (const session of existingSessions) {
-          await this.wc_client.disconnect({
-            topic: session.topic,
-            reason: new Error("Existing session disconnected"),
-          });
-        }
-      }
+      
+      // const existingSessions = this.wc_client.session.getAll();
+      // console.log("Existing sessions: ", existingSessions);
+      // if (existingSessions.length > 0) {
+      //   console.log("Existing sessions found, disconnecting them...");
+      //   for (const session of existingSessions) {
+      //     await this.wc_client.disconnect({
+      //       topic: session.topic,
+      //       reason: new Error("Existing session disconnected"),
+      //     });
+      //   }
+      // }
       // same for session requests
-      console.log(this.wc_client.proposal);
+      // console.log(this.wc_client.proposal);
+      this.printSessions()
 
-      // Create a new session
+      const existingPairing = this.printPairing()
+      
+
+      // Create a new session if not exists 
       console.log("Connecting to wallet...");
       const { uri, approval } = await this.wc_client.connect({
         requiredNamespaces: {
@@ -93,14 +123,19 @@ export class AccountWalletWC {
             events: [IDAppSdkWallectConnectMethods.CREATE_ACCOUNT, IDAppSdkWallectConnectMethods.RECOVER_ACCOUNT],
           },
         },
-        pairingTopic: undefined,
+        pairingTopic: existingPairing?.topic,
       });
       this.uri = uri
       console.log("Wallet connect URI: ", uri);
       console.log("Waiting for approval...");
       approval().then((x: unknown) => {
         console.log("Session approved:", x);
+        // alert(`Session approved: ` + x?.topic)
         this.session = x
+        console.log('Session expires at:', this.formatExpiryIST(this.session.expiry));
+        this.printPairing()
+        //      this.print(this.session, 'Session')
+        this.printSessions()
         ConcordiumIDAppPoup.closePopup()
       });
       return uri
@@ -109,22 +144,70 @@ export class AccountWalletWC {
     }
   }
 
-  disconnection(){
+  print(sessionOrPair: any, type: string ='Session'){
+    if(sessionOrPair){
+      console.log({
+        type,
+        topic: sessionOrPair.topic, 
+        expiry: this.formatExpiryIST(sessionOrPair.expiry)
+      })
+    }
+  }
+  async printSessions(){
+    const existingSessions = this.wc_client.session.getAll();
+      console.log("Existing sessions: ", existingSessions);
+      if (existingSessions.length > 0) {
+        console.log("Existing sessions found, lenght  " + existingSessions.length);
+        for (const session of existingSessions) {
+          this.print(session, 'Session')
+        }
+
+        console.log(existingSessions[0])
+      }
+  }
+  printPairing(){
+    const pairings = this.wc_client.pairing.getAll();
+      const existingPairing = pairings.find((p:any) => p?.active);
+      if(existingPairing){
+        console.log('Pairing expires at:', this.formatExpiryIST(existingPairing.expiry));
+        this.print(existingPairing, 'Pair')
+      } else {
+        console.log('no pairing found...')
+      }
+
+      return existingPairing
+  }
+
+  formatExpiryIST = (expiryUnixSeconds: number) => {
+  const date = new Date(expiryUnixSeconds * 1000); // convert to milliseconds
+  return date.toLocaleString('en-IN', {
+    timeZone: 'Asia/Kolkata',
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  });
+}
+
+  disconnection(topic: string = this.session.topic){
     if (!this.wc_client) throw new Error("SDK not initialized");
-
-    if (!this.session) throw new Error("No session found, please connect");
-
+    // if (!this.session) throw new Error("No session found, please connect");
     // Disconnect the session
-    this.wc_client.disconnect({
-      topic: this.session.topic,
+    console.log({topic})
+    return this.wc_client.disconnect({
+      topic: topic,
       reason: new Error("User disconnected"),
     });
-    this.session = null;
   }
   async request(method: string = "custom_message", chainId: string = "eip155:1", message: any) {
     if (!this.wc_client) throw new Error("SDK not initialized");
 
-    if (!this.session) throw new Error("No session found, please connect");
+    if (!this.session) {
+      this.session = this.getMostNewSession()
+      console.log('Retrived sessions being used... ' + this.session.topic)
+    }
 
     // Send a custom message
     const result = await this.wc_client.request({
