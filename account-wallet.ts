@@ -13,8 +13,6 @@ import {
   type RecoverAccountMsgType,
   ConcordiumIDAppPoup,
   type SerializedCredentialDeploymentDetails,
-  type CreateAccountResponseMsgType,
-  type SignedCredentialDeploymentTransaction,
 } from "id-app-sdk";
 import type { CredentialDeploymentTransaction, HexString } from "@concordium/web-sdk";
 
@@ -30,9 +28,9 @@ export class AccountWalletWC {
     this.wc_client = await SignClient.init({
       projectId,
       metadata: {
-        name: "App A",
+        name: "3P Account Wallet",
         description: "dApp initiating connection",
-        url: "localhost:3000",
+        url: "http://localhost:3000",
         icons: ["https://app-a.com/icon.png"],
       },
     });
@@ -47,6 +45,27 @@ export class AccountWalletWC {
       //   console.log("🎉 App A received:", emittedEvent.data.message);
       // }
     });
+
+
+    this.wc_client.on('session_authenticate', (data) => {
+      console.log('session_authenticate:', data)
+    })
+
+    this.wc_client.on('session_delete', (data) => {
+      console.log('session_delete:', data)
+      // this.removeAccountDataAndRedirect()
+      // this.signClient?.session.delete(data.topic, {
+      //   code: 1000,
+      //   message: 'User disconnected',
+      // })
+      alert(`Session was deleted from idapp, topic = ` + data.topic)
+      window.location.reload()
+    })
+
+    this.wc_client.on('session_request_expire', (data) => {
+      console.log('session_request_expire:', data)
+      alert('Session Request Expired, topic ' + data.topic)
+    })
 
     this.printPairing()
     this.printSessions()
@@ -84,57 +103,29 @@ export class AccountWalletWC {
       const pendingRequest = this.wc_client.getPendingSessionRequests();
       console.log("Pending requests: ", pendingRequest);
 
-      // if (pendingRequest.length > 0) {
-      //   console.log("Pending requests found, rejecting them...");
-      //   for (const request of pendingRequest) {
-      //     await this.wc_client.reject({
-      //       topic: request.topic,
-      //       reason: new Error("Pending request rejected"),
-      //     });
-      //   }
-      // }
-      // do same for session
-      
-      // const existingSessions = this.wc_client.session.getAll();
-      // console.log("Existing sessions: ", existingSessions);
-      // if (existingSessions.length > 0) {
-      //   console.log("Existing sessions found, disconnecting them...");
-      //   for (const session of existingSessions) {
-      //     await this.wc_client.disconnect({
-      //       topic: session.topic,
-      //       reason: new Error("Existing session disconnected"),
-      //     });
-      //   }
-      // }
-      // same for session requests
-      // console.log(this.wc_client.proposal);
       this.printSessions()
-
       const existingPairing = this.printPairing()
       
-
       // Create a new session if not exists 
       console.log("Connecting to wallet...");
       const { uri, approval } = await this.wc_client.connect({
-        requiredNamespaces: {
+        optionalNamespace: {
           concordium: {
             methods: [IDAppSdkWallectConnectMethods.CREATE_ACCOUNT, IDAppSdkWallectConnectMethods.RECOVER_ACCOUNT],
             chains: [chainId],
             events: [IDAppSdkWallectConnectMethods.CREATE_ACCOUNT, IDAppSdkWallectConnectMethods.RECOVER_ACCOUNT],
           },
         },
-        pairingTopic: existingPairing?.topic,
+        pairingTopic: undefined//existingPairing?.topic,
       });
       this.uri = uri
       console.log("Wallet connect URI: ", uri);
       console.log("Waiting for approval...");
       approval().then((x: unknown) => {
-        console.log("Session approved:", x);
-        // alert(`Session approved: ` + x?.topic)
+        console.log("Session approved:", x);        
         this.session = x
         console.log('Session expires at:', this.formatExpiryIST(this.session.expiry));
         this.printPairing()
-        //      this.print(this.session, 'Session')
         this.printSessions()
         ConcordiumIDAppPoup.closePopup()
       });
@@ -193,13 +184,24 @@ export class AccountWalletWC {
 
   disconnection(topic: string = this.session.topic){
     if (!this.wc_client) throw new Error("SDK not initialized");
-    // if (!this.session) throw new Error("No session found, please connect");
-    // Disconnect the session
     console.log({topic})
     return this.wc_client.disconnect({
       topic: topic,
       reason: new Error("User disconnected"),
     });
+  }
+
+  async disconnectall(){
+    const existingSessions = this.getListOfSessions()
+      if (existingSessions.length > 0) {
+        console.log("Existing sessions found, disconnecting them...");
+        for (const session of existingSessions) {
+          console.log('disconnecting... ' + session.topic) 
+          await this.disconnection(session.topic)
+        }
+      } else {
+        console.log('No session found to disconnect...')
+      }
   }
   async request(method: string = "custom_message", chainId: string = "eip155:1", message: any) {
     if (!this.wc_client) throw new Error("SDK not initialized");
@@ -228,6 +230,7 @@ export class AccountWallet {
   constructor(acwallet: AccountWalletWC, seed?: string) {
     this.accountWallet = acwallet
     this.seed = seed? seed : generateMnemonic(wordlist, 256)
+    // this.seed = generateMnemonic(wordlist, 256)
   }
 
 
@@ -249,7 +252,7 @@ export class AccountWallet {
 
   async createCCDAccount(): Promise<{create_acc_resp?: CreateAccountCreationResponse, public_key?: string, account_address?:string, txHash?:string } | undefined> {
     try {
-
+      localStorage.removeItem('pk')
       const wallet = this.getWallet()
       const public_key = wallet.publicKey
       localStorage.setItem('pk', public_key)

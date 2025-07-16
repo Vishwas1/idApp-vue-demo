@@ -11,35 +11,51 @@
     </UCard>
 
     <UCard>
-      <h2>ACTIVE SESSIONS ({{ sessions.length }})</h2>
-      <UContainer>
-        <ul class="divide-y divide-gray-200" style="max-height: 300px; overflow-y: auto;">
-          <li v-for="pair in sessions" :key="pair.topic" class="flex justify-between items-center py-3">
-            <!-- Left: Metadata -->
-            <div class="flex flex-col">
-              <span class="text-base font-medium text-white-800">
-                {{ pair.peer.metadata?.name || 'Unknown App' }}
-              </span>
-              <span class="text-sm text-gray-500 whitespace-nowrap">
-                <strong>Topic:</strong> {{ pair.topic || 'No Topic' }}
-              </span>
-              <span class="text-sm text-gray-500 whitespace-nowrap">
-                <strong>Public Key:</strong> {{ pair.peer.publicKey || 'No Publickey' }}
-              </span>
-              <span class="text-sm text-gray-600 whitespace-nowrap">
-                <strong>Expires on:</strong> {{ accountWalletConnect.formatExpiryIST(pair.expiry) }}
-              </span>
-            </div>
+  <div class="flex justify-between items-center mb-2">
+    <h2>ACTIVE CONNECTIONS ({{ sessions.length }})</h2>
+    <button
+      class="px-3 py-1 text-sm text-red-600 border border-red-600 rounded hover:bg-red-50"
+      @click="disconnectAllSessions"
+      v-if="sessions.length > 0"
+    >
+      Disconnect All
+    </button>
+  </div>
 
-            <!-- Right: Disconnect Button -->
-            <button class="ml-4 px-3 py-1 text-sm text-red-600 border border-red-600 rounded hover:bg-red-50"
-              @click="disconnectSession(pair.topic)">
-              Disconnect
-            </button>
-          </li>
-        </ul>
-      </UContainer>
-    </UCard>
+  <UContainer>
+    <ul class="divide-y divide-gray-200" style="max-height: 300px; overflow-y: auto;">
+      <li
+        v-for="pair in sessions"
+        :key="pair.topic"
+        class="flex justify-between items-center py-3"
+      >
+        <!-- Left: Metadata -->
+        <div class="flex flex-col">
+          <span class="text-base font-medium text-white-800">
+            {{ pair.peer.metadata?.name || 'Unknown App' }}
+          </span>
+          <span class="text-sm text-gray-500 whitespace-nowrap">
+            <strong>Topic:</strong> {{ pair.topic || 'No Topic' }}
+          </span>
+          <span class="text-sm text-gray-500 whitespace-nowrap">
+            <strong>Public Key:</strong> {{ pair.peer.publicKey || 'No Publickey' }}
+          </span>
+          <span class="text-sm text-gray-600 whitespace-nowrap">
+            <strong>Expires on:</strong> {{ accountWalletConnect.formatExpiryIST(pair.expiry) }}
+          </span>
+        </div>
+
+        <!-- Right: Disconnect Button -->
+        <button
+          class="ml-4 px-3 py-1 text-sm text-red-600 border border-red-600 rounded hover:bg-red-50"
+          @click="disconnectSession(pair.topic)"
+        >
+          Disconnect
+        </button>
+      </li>
+    </ul>
+  </UContainer>
+</UCard>
 
     <!-- <UCard>
       <h2>ACTIVE PAIRS ({{ pairings.length }})</h2>
@@ -103,6 +119,11 @@ const clear = () => {
   accountAddress.value = ''
 }
 
+const disconnectAllSessions = async () => {
+  await accountWalletConnect.value?.disconnectall()
+  window.location.reload()
+}
+
 const chains = ['Ethereum', 'Concordium', 'Bitcoin']
 const toggles = reactive(
   chains.reduce((acc, chain) => {
@@ -120,12 +141,6 @@ function onToggle(chain, value) {
 
 const pairings = ref([])
 const sessions = ref([])
-
-// const getListOfPairing = () => {
-//   if (wc_client) {
-//     pairings.value = wc_client.pairing.getAll()
-//   }
-// }
 
 const disconnectSession = async (topic) => {
   console.log({ topic })
@@ -149,9 +164,6 @@ onMounted(async () => {
 
   sessions.value = accountWalletConnect.value.getListOfSessions()
   pairings.value = accountWalletConnect.value.getListOfPairing()
-  // console.log({
-  //   pairs: pairings.value
-  // })
 })
 
 watch(
@@ -178,9 +190,18 @@ const toggleNetwork = async () => {
     await wcConnect()
     showLoader.value = false
 
+    sessions.value = accountWalletConnect.value.getListOfSessions()
+    if(!accountWalletConnect.value.uri){
+      alert('Could not connect to wallet connect server, please reload the page and try again in sometime. ')
+      return
+    }
+
+    
+    
     ConcordiumIDAppPoup.invokeIdAppDeepLinkPopup({
       walletConnectUri: accountWalletConnect.value.uri
     })
+    
     return;
   }
 
@@ -188,6 +209,7 @@ const toggleNetwork = async () => {
     onCreateAccount,
     onRecoverAccount
   })
+  // sessions.value = accountWalletConnect.value.getListOfSessions()
 }
 
 const wcConnect = async () => {
@@ -197,29 +219,7 @@ const wcConnect = async () => {
     return
   }
   await accountWalletConnect.value.connect(ConcordiumIDAppSDK.chainId)
-  // pairings.value = accountWalletConnect.value.getListOfPairing()
-  // console.log({ list: pairings.value})
-  // uri.value = "http://localhost:5173/wallet-connect?encodedUri=" + wc_uri;
-  // deeplink.value = "concordiumidapp://wallet-connect?encodedUri=" + wc_uri;
 }
-
-
-// const connectWalletConnectAndOpenIdApp = async () => {
-//   showLoader.value = true
-//   await wcConnect()
-//   showLoader.value = false
-//   // openIdapp()
-//   ConcordiumIDAppPoup.closePopup()
-// }
-
-
-// const verifyIfMobile = () => {
-//   if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-//     return true
-//   } else {
-//     return false 
-//   }
-// }
 
 const openIdapp = async () => {
   console.log('Opening openIdapp..')
@@ -273,25 +273,29 @@ const onCreateAccount = async () => {
           signedCreddepTx
         })
         console.log('ConcordiumIDAppSDK.submitCCDTransaction ...')
-        const txHash = await acWallet.value?.submitTransaction(signedCreddepTx.credentialDeploymentTransaction,
-          signedCreddepTx.signature)
-        console.log({ txHash: txHash?.toString() })
+        try{
+              const txHash = await acWallet.value?.submitTransaction(signedCreddepTx.credentialDeploymentTransaction,
+                  signedCreddepTx.signature)
+                console.log({ txHash: txHash?.toString() })
 
-        console.log(result)
-        alert(`Account created successfully with address: ${resp?.accountAddress} \n\nTransaction Hash: ${txHash?.toString()}
-        ` )
-        ConcordiumIDAppPoup.closePopup()
+                console.log(result)
+                    alert(`Account created successfully with address: ${resp?.accountAddress} \n\nTransaction Hash: ${txHash?.toString()}` )
+                ConcordiumIDAppPoup.closePopup()
+        }catch(e){
+          alert(e?.message)
+          ConcordiumIDAppPoup.closePopup()
+        }
+        
       } else {
         alert('Signature request rejected')
         ConcordiumIDAppPoup.closePopup()
       }
 
     } else {
-      throw new Error("")
+      console.log(create_acc_resp)
+      alert(`Request rejected : ${create_acc_resp?.message?.details} `)
+      window.location.reload()
     }
-
-    // alert('Account created successfully with address: ' + resp?.accountAddress)
-    //     ConcordiumIDAppPoup.closePopup()
   })
 
 
@@ -309,26 +313,18 @@ const onCreateAccount = async () => {
 }
 
 const onRecoverAccount = async () => {
-  console.log('Nefore calling recoverCCDAccount...')
   const publicKey = localStorage.getItem('pk')
   if (publicKey) {
-
-    // send  the request to recover the account
     acWallet.value?.recoverCCDAccount(publicKey).then(result => {
       console.log(result)
       alert('Account recovered successfully with address: ' + result?.account_address)
       localStorage.setItem('accountAddress', result?.account_address)
-      //  we can close the poup here
       ConcordiumIDAppPoup.closePopup()
-      //disconnect the wallet connect session
-      accountWalletConnect.value?.disconnection()
-
     })
 
     setTimeout(() => {
       console.log('after calling onRecoverAccount...')
-      console.log('Opening Idapp...')
-      // open the idapp
+      console.log('Opening Idapp...')      
       deeplink.value = "concordiumidapp://id-signup";
       uri.value = "http://localhost:5173/id-signup";
       openIdapp()

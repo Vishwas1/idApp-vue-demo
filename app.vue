@@ -10,7 +10,8 @@ const clearStore = () => {
     localStorage.removeItem('identity-credentials')
     localStorage.removeItem('seed-phrase')
     localStorage.removeItem('account-seed-phrase')
-    window.location.reload()
+    localStorage.removeItem('pk')
+    window.location.reload()    
 }
 
 </script>
