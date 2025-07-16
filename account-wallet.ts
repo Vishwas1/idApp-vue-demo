@@ -47,11 +47,11 @@ export class AccountWalletWC {
     });
 
 
-    this.wc_client.on('session_authenticate', (data) => {
+    this.wc_client.on('session_authenticate', (data: any) => {
       console.log('session_authenticate:', data)
     })
 
-    this.wc_client.on('session_delete', (data) => {
+    this.wc_client.on('session_delete', (data: any) => {
       console.log('session_delete:', data)
       // this.removeAccountDataAndRedirect()
       // this.signClient?.session.delete(data.topic, {
@@ -62,7 +62,7 @@ export class AccountWalletWC {
       window.location.reload()
     })
 
-    this.wc_client.on('session_request_expire', (data) => {
+    this.wc_client.on('session_request_expire', (data: any) => {
       console.log('session_request_expire:', data)
       alert('Session Request Expired, topic ' + data.topic)
     })
