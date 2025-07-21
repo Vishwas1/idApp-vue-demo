@@ -38,14 +38,9 @@ export class AccountWalletWC {
     // events...
     this.wc_client.on("session_event", (event: any) => {
       const { event: emittedEvent } = event;
-      console.log("🎉 Aaccount wallet received:" + emittedEvent.data.message);
-      alert("🎉 Aaccount wallet received:" + emittedEvent.data.message);
-
-      // if (emittedEvent.name === "custom_message_from_b") {
-      //   console.log("🎉 App A received:", emittedEvent.data.message);
-      // }
+      console.log("🎉 Account wallet received:" + emittedEvent.data.message);
+      alert("🎉 Account wallet received:" + emittedEvent.data.message);
     });
-
 
     this.wc_client.on('session_authenticate', (data: any) => {
       console.log('session_authenticate:', data)
@@ -53,18 +48,22 @@ export class AccountWalletWC {
 
     this.wc_client.on('session_delete', (data: any) => {
       console.log('session_delete:', data)
-      // this.removeAccountDataAndRedirect()
-      // this.signClient?.session.delete(data.topic, {
-      //   code: 1000,
-      //   message: 'User disconnected',
-      // })
-      alert(`Session was deleted from idapp, topic = ` + data.topic)
+      alert(`Oops, looks like the session was deleted from idapp with topic ` + data.topic)
+      ConcordiumIDAppPoup.closePopup()
       window.location.reload()
+    })
+
+    this.wc_client.on('proposal_expire', (data: any) => {
+      console.log('3PAuth:: Inside this.signClient.on(proposal_expire) ' + JSON.stringify(data))
+      alert('Oops, looks like you either did not scan the QR code/clicked on deeplink button or idapp did not approve the pairing request')
+      ConcordiumIDAppPoup.closePopup()
+      // window.location.reload()
     })
 
     this.wc_client.on('session_request_expire', (data: any) => {
       console.log('session_request_expire:', data)
-      alert('Session Request Expired, topic ' + data.topic)
+      alert('Oops, looks like idApp did not respond to your request with topic ' + data.topic)
+      ConcordiumIDAppPoup.closePopup()
     })
 
     this.printPairing()

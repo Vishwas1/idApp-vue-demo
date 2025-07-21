@@ -207,9 +207,9 @@ const toggleNetwork = async () => {
 
   ConcordiumIDAppPoup.invokeIdAppActionsPopup({
     onCreateAccount,
-    onRecoverAccount
+    onRecoverAccount,
+    walletConnectSessionTopic: accountWalletConnect.value?.session.topic
   })
-  // sessions.value = accountWalletConnect.value.getListOfSessions()
 }
 
 const wcConnect = async () => {
@@ -245,7 +245,7 @@ const onCreateAccount = async () => {
   // send  the request to create the account
   acWallet.value?.createCCDAccount().then(async (result) => {
     if (!result) {
-      alert('Error: Could not create account from Idapp')
+      alert('Error: Could not create account from Idapp, request rejected or expired')
       return;
     }
     const { create_acc_resp, public_key } = result;
