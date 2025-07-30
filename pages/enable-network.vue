@@ -207,7 +207,8 @@ const toggleNetwork = async () => {
 
   ConcordiumIDAppPoup.invokeIdAppActionsPopup({
     onCreateAccount,
-    onRecoverAccount
+    onRecoverAccount,
+    walletConnectSessionTopic: accountWalletConnect.value?.session.topic
   })
   // sessions.value = accountWalletConnect.value.getListOfSessions()
 }
