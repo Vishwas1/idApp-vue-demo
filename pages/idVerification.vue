@@ -2,16 +2,17 @@
   <UContainer>
     <div class="flex flex-col gap-2">
       <UCard style="width: 100%">
-        <div class="flex items-center gap-2">
-          <UButton @click="generateChallenge">Generate Challenge</UButton>
-        </div>
-
-        <div class="mt-2">
+         <div class="mt-2">
           <strong>Request:</strong>
           <pre class="bg-gray-100 p-2 rounded text-sm">{{
             JSON.stringify(challengeRequest, null, 2)
           }}</pre>
         </div>
+        <div class="flex items-center gap-2">
+          <UButton @click="generateChallenge">Generate Challenge</UButton>
+        </div>
+
+       
 
         <div class="mt-2">
           <strong>Response:</strong>
@@ -30,14 +31,13 @@
           }}</pre>
         </div>
         <br />
-        <UButton type="success" @click="verify">Verify Identity</UButton>
-        <div class="mt-2">
+         <div class="mt-2">
           <strong>Request:</strong>
           <pre class="bg-gray-100 p-2 rounded text-sm">{{
             JSON.stringify(verifyZKProofRequest, null, 2)
           }}</pre>
         </div>
-
+        <UButton type="success" @click="verify">Verify Identity</UButton>
         <div class="mt-2">
           <strong>Response:</strong>
           <pre>{{ presentationVerificationResult }}</pre>
