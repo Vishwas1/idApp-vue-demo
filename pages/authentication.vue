@@ -86,7 +86,7 @@ const connectProvider = async (provider: WalletProvider) => {
 async function generateChallenge() {
   const body = { context: "Login" };
   challengeRequest.value = body;
-  const resp = await fetch(`http://localhost:3006/api/v1/challenge`, {
+  const resp = await fetch(`http://ai-plugin.nanocorp.io:3006/api/v1/challenge`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -168,7 +168,7 @@ async function generateAccessToken() {
       signature = signature[0]; // ✅ final string value
     }
   }
-  const resp = await fetch(`http://localhost:3006/api/v1/auth`, {
+  const resp = await fetch(`http://ai-plugin.nanocorp.io:3006/api/v1/auth`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

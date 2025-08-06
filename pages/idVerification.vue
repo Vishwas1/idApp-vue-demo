@@ -85,7 +85,7 @@ async function generateChallenge() {
     },
   };
   challengeRequest.value = body;
-  const resp = await fetch(`http://localhost:3006/api/v1/challenge`, {
+  const resp = await fetch(`http://ai-plugin.nanocorp.io:3006/api/v1/challenge`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -138,7 +138,7 @@ async function verify() {
   const presentationToVerify = zk_proof.value;
   verifyZKProofRequest.value = presentationToVerify;
   try {
-    const resp = await fetch(`http://localhost:3006/api/v1/verify/id-proof`, {
+    const resp = await fetch(`http://ai-plugin.nanocorp.io:3006/api/v1/verify/id-proof`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
