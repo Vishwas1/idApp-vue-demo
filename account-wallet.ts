@@ -65,6 +65,7 @@ export class AccountWalletWC {
     this.wc_client.on('session_request_expire', (data: any) => {
       console.log('session_request_expire:', data)
       alert('Session Request Expired, topic ' + data.topic)
+      window.location.reload()
     })
 
     this.printPairing()
@@ -251,7 +252,7 @@ export class AccountWallet {
   }
 
   async createCCDAccount(): Promise<{create_acc_resp?: CreateAccountCreationResponse, public_key?: string, account_address?:string, txHash?:string } | undefined> {
-    try {
+    // try {
       localStorage.removeItem('pk')
       const wallet = this.getWallet()
       const public_key = wallet.publicKey
@@ -267,25 +268,11 @@ export class AccountWallet {
         new_account_request)
 
       return {create_acc_resp, public_key}
-
-      // if (create_acc_resp.status == Status.SUCCESS) {
-      //   const resp: CreateAccountResponseMsgType = create_acc_resp.message as CreateAccountResponseMsgType;
-      //   console.log('Recieved account creation response account_address ' + resp.accountAddress)
-
-      //   console.log('ConcordiumIDAppSDK.signCredentialTransaction ...')
-      //   const signedCreddepTx: SignedCredentialDeploymentTransaction = await ConcordiumIDAppSDK.signCredentialTransaction(resp.serializedCredentialDeploymentTransaction, wallet.signingKey);
-
-      //   console.log('ConcordiumIDAppSDK.submitCCDTransaction ...')
-      //   const txHash = await ConcordiumIDAppSDK.submitCCDTransaction(signedCreddepTx.credentialDeploymentTransaction, signedCreddepTx.signature, 'Testnet')
-      //   console.log({ txHash: txHash.toString() })
-
-      //   return { account_address: resp.accountAddress, public_key, txHash }
-      // } else {
-      //   throw new Error("")
-      // }
-    } catch (e) {
-      console.log(e)
-    }
+    // } catch (e) {
+    //   console.log(e)
+    //   alert('Error in account creation: ' + e.message)
+    //   window.location.reload()
+    // }
   }
 
   async recoverCCDAccount(public_key: string) {

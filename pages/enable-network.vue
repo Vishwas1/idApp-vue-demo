@@ -207,7 +207,8 @@ const toggleNetwork = async () => {
 
   ConcordiumIDAppPoup.invokeIdAppActionsPopup({
     onCreateAccount,
-    onRecoverAccount
+    onRecoverAccount,
+    walletConnectSessionTopic: accountWalletConnect.value?.getListOfSessions()[0]?.topic
   })
   // sessions.value = accountWalletConnect.value.getListOfSessions()
 }
@@ -296,7 +297,12 @@ const onCreateAccount = async () => {
       alert(`Request rejected : ${create_acc_resp?.message?.details} `)
       window.location.reload()
     }
-  })
+  }).catch(e => {
+      ConcordiumIDAppPoup.closePopup()
+      console.error('Error creating account:', e)
+      alert('Error creating account: ' + e.message)
+      window.location.reload()
+    })
 
 
   setTimeout(() => {
@@ -320,6 +326,11 @@ const onRecoverAccount = async () => {
       alert('Account recovered successfully with address: ' + result?.account_address)
       localStorage.setItem('accountAddress', result?.account_address)
       ConcordiumIDAppPoup.closePopup()
+    }).catch(e => {
+      ConcordiumIDAppPoup.closePopup()
+      console.error('Error recovering account:', e)
+      alert('Error recovering account: ' + e.message)
+      window.location.reload()
     })
 
     setTimeout(() => {
