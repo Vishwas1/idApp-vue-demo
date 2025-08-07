@@ -161,7 +161,7 @@ async function verify() {
   const body = { txHash: pltTransactionHash.value };
   verifyPaymentRequest.value = body;
   try {
-    const resp = await fetch(`http://localhost:3006/api/v1/verify/tx-hash`, {
+    const resp = await fetch(`http://ai-plugin.nanocorp.io:3006/api/v1/verify/tx-hash`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
