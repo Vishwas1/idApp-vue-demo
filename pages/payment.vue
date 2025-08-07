@@ -21,7 +21,7 @@
           }}</pre>
         </div>
 
-        <UButton class="mt-4" @click="payPlt">Pay {{ amount }} 0xbogac</UButton>
+        <UButton class="mt-4" @click="payPlt">Pay {{ amount }} TestDevnetDenylist</UButton>
         <div>PLT TransactionHas: {{ pltTransactionHash }}</div>
 
         <br />
