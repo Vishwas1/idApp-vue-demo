@@ -97,7 +97,7 @@ async function generateChallenge() {
     contextDetails: {
       amount: "1",
       purpose: "Testing payment flow",
-      tokenSymbol: "0xbogac",
+      tokenSymbol: "TestDevnetDenylist",
     },
   };
   challengeRequest.value = body;
@@ -172,7 +172,7 @@ async function verify() {
     });
 
     if (!resp.ok) {
-      throw new Error("Presentation not verified");
+      throw new Error("Payment transaction not verified");
     } else {
       const json = await resp.json();
       paymentVerificationResult.value = json;
