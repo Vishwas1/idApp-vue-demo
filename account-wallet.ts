@@ -285,7 +285,8 @@ export class AccountWallet {
       return { account_address: message.accountAddress }
     } else {
       console.log('Error in account recovery response: ' + recover_acc_resp.status)
-      throw new Error("Could not reciever recovery response") ///// 
+      // throw new Error("Could not reciever recovery response") ///// 
+      return recover_acc_resp
     }
   }
 }

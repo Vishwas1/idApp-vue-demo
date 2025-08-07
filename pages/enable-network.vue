@@ -323,8 +323,13 @@ const onRecoverAccount = async () => {
   if (publicKey) {
     acWallet.value?.recoverCCDAccount(publicKey).then(result => {
       console.log(result)
-      alert('Account recovered successfully with address: ' + result?.account_address)
-      localStorage.setItem('accountAddress', result?.account_address)
+      if(result?.account_address){
+        alert('Account recovered successfully with address: ' + result?.account_address)
+        localStorage.setItem('accountAddress', result?.account_address)
+      } else {
+        alert(`Error: Code ${result.message.code} : ${result.message.details}`)
+      }
+      
       ConcordiumIDAppPoup.closePopup()
     }).catch(e => {
       ConcordiumIDAppPoup.closePopup()
@@ -333,13 +338,13 @@ const onRecoverAccount = async () => {
       window.location.reload()
     })
 
-    setTimeout(() => {
-      console.log('after calling onRecoverAccount...')
-      console.log('Opening Idapp...')      
-      deeplink.value = "concordiumidapp://id-signup";
-      uri.value = "http://localhost:5173/id-signup";
-      openIdapp()
-    }, 2000)
+    // setTimeout(() => {
+    //   console.log('after calling onRecoverAccount...')
+    //   console.log('Opening Idapp...')      
+    //   deeplink.value = "concordiumidapp://id-signup";
+    //   uri.value = "http://localhost:5173/id-signup";
+    //   openIdapp()
+    // }, 2000)
 
   } else {
     alert('No pk found')
