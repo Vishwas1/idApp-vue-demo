@@ -29,7 +29,6 @@
     "@walletconnect/types": "^2.20.0",
     "better-sqlite3": "^12.0.0",
     "eslint": "^9.25.1",
-    "id-app-sdk": "git+https://github.com/Concordium/id-app-sdk.git#develop",
     "nuxt": "^3.16.2",
     "vue": "^3.5.13",
     "vue-router": "^4.5.0"

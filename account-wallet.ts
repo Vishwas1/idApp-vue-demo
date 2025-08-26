@@ -13,7 +13,7 @@ import {
   type RecoverAccountMsgType,
   ConcordiumIDAppPoup,
   type SerializedCredentialDeploymentDetails,
-} from "id-app-sdk";
+} from "@concordium/id-app-sdk";
 import type { CredentialDeploymentTransaction, HexString } from "@concordium/web-sdk";
 
 const projectId = "8b6c46b9127ce91195745c124870244e";
