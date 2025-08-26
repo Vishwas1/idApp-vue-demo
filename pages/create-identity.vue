@@ -59,9 +59,9 @@
 <script setup lang="ts">
 
 
-import { generateMnemonic, validateMnemonic } from '@scure/bip39';
+import { generateMnemonic, mnemonicToSeedSync, validateMnemonic } from '@scure/bip39';
 import { wordlist } from '@scure/bip39/wordlists/english';
-import { ConcordiumHdWallet, ConcordiumGRPCWebClient, TransactionExpiry, type IdentityProvider, type CredentialInputNoSeed, type CryptographicParameters, type IdentityRequestWithKeysInput, type IdObjectRequestV1, type Versioned, createIdentityRequestWithKeys, type IdentityObjectV1, createCredentialTransactionNoSeed, createIdentityRecoveryRequestWithKeys, type IdentityRecoveryRequestWithKeysInput, type IdRecoveryRequest, CredentialRegistrationId, signCredentialTransaction, getAccountAddress } from '@concordium/web-sdk'
+import { type Network, ConcordiumHdWallet, ConcordiumGRPCWebClient, TransactionExpiry, type IdentityProvider, type CredentialInputNoSeed, type CryptographicParameters, type IdentityRequestWithKeysInput, type IdObjectRequestV1, type Versioned, createIdentityRequestWithKeys, type IdentityObjectV1, createCredentialTransactionNoSeed, createIdentityRecoveryRequestWithKeys, type IdentityRecoveryRequestInput, createIdentityRecoveryRequest, type IdentityRecoveryRequestWithKeysInput, type IdRecoveryRequest, CredentialRegistrationId, signCredentialTransaction, getAccountAddress } from '@concordium/web-sdk'
 import { IdentityProviderIdentityStatus, type IdentityTokenContainer } from '~/types';
 import { createCredentialDeploymentKeysAndRandomness, getAccountSigningKey, getCredentialId, getCryptographicParameters, getDefaultTransactionExpiry, getRedirectUri, loop, sendCredentialDeploymentTransaction, sendIdentityRecoveryRequest } from '~/utils';
 import { identityIndex } from '~/constants';
@@ -73,7 +73,7 @@ import MyIds from '~/components/MyIDs.vue'
 
 const showLoader = useState('showLoader')
 
-const network = 'Testnet';
+const network: unknown = 'Testnet';
 const route = useRoute()
 const cred_tx = ref({})
 const accountSeed = ref('')
@@ -91,13 +91,36 @@ const ipList = ref<IdentityProviderWithMetadata[]>([])
 const ipListSelected = ref(0)
 const accountAddressProxy = ref({})
 
+
+ const mainnet = {
+  genesisHash: '9dd9ca4d19e9393877d2c44b70f89acbfc0883c2243e5eeaecc0d1cd0503f478',
+  name: 'Concordium Mainnet',
+  walletProxyBaseUrl: 'https://wallet-proxy.mainnet.concordium.software',
+  grpcPort: 20000,
+  grpcUrl: 'https://grpc.mainnet.concordium.software',
+  ccdScanUrl: 'https://ccdscan.io/',
+}
+
+ const testnet  = {
+  genesisHash: '4221332d34e1694168c2a0c0b3fd0f273809612cb13d000d5c2e00e85f50f796',
+  name: 'Concordium Testnet',
+  walletProxyBaseUrl: 'https://wallet-proxy.testnet.concordium.com',
+  grpcPort: 20000,
+  grpcUrl: 'https://grpc.testnet.concordium.com',
+  ccdScanUrl: 'https://testnet.ccdscan.io/',
+}
+
+
+
 // const worker = new Worker(new URL('workers/identity.worker.js', 'http://localhost:3000'));
-const nodeAddress = 'https://grpc.testnet.concordium.com';
-const nodePort = 20000;
+const nodeAddress = network == 'Mainnet'? mainnet.grpcUrl : testnet.grpcUrl // 'https://grpc.testnet.concordium.com';
+const nodePort = network == 'Mainnet'? mainnet.grpcPort : testnet.grpcPort;
 // Base URL for the wallet proxy.
-const walletProxyBaseUrl = 'https://wallet-proxy.testnet.concordium.com';
+const walletProxyBaseUrl = network == 'Mainnet'? mainnet.walletProxyBaseUrl : testnet.walletProxyBaseUrl;  //'https://wallet-proxy.testnet.concordium.com';
 // Base URL for CCDscan. This is used to link to a submitted transaction.
-const ccdscanBaseUrl = 'https://testnet.ccdscan.io';
+const ccdscanBaseUrl = network == 'Mainnet'? mainnet.ccdScanUrl : testnet.ccdScanUrl //'https://testnet.ccdscan.io';
+
+console.log({nodeAddress})
 const client = new ConcordiumGRPCWebClient(nodeAddress, nodePort);
 
 //// 
@@ -330,10 +353,20 @@ const recoverIDApp = async (public_key) => {
     revocerSeed();
 
     const a = recoverIdentity()
-    const b = recoverIdentityCredentials()
-    Promise.all([a, b]).then(() => {
+    // const b = recoverIdentityCredentials()
+    Promise.all([a]).then(() => {
         showLoader.value = false
-        window.location.reload()
+        // window.location.reload()
+        const t = JSON.parse(localStorage.getItem('identity-objects') || '[]')
+        let m; 
+        if(t.length > 0){
+            m = 'Recovery successful. You can now create account with the recovered identity.'
+            
+        } else {
+            m = 'No identity found to recover for IDP' + selectedIdentityProvider.value.metadata.support + '. Please check your seed and try again.'
+        }
+        console.log(m)
+        alert(m)
     }).catch((e) => {
         console.error(e)
         showLoader.value = false
@@ -343,6 +376,28 @@ const recoverIDApp = async (public_key) => {
     // await recoverIdentityCredentials()
     // showLoader.value = false
     // window.location.reload()
+}
+
+
+// function getSeedHex() {
+//     return Buffer.from(mnemonicToSeedSync(seed.value)).toString('hex');
+// }
+
+function getSeedHex() {
+  const seedBytes = mnemonicToSeedSync(seed.value); // returns Uint8Array
+  return Array.from(seedBytes)
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
+}
+
+function mnemonicToHex(mnemonic) {
+  // mnemonicToSeedSync returns a Uint8Array in the browser
+  const seedBytes = mnemonicToSeedSync(mnemonic);
+
+  // convert Uint8Array → hex string
+  return Array.from(seedBytes)
+    .map(byte => byte.toString(16).padStart(2, "0"))
+    .join("");
 }
 
 // Recover from IDP
@@ -362,30 +417,78 @@ const recoverIdentity = async () => {
     //         identityObjects = JSON.parse(identityObjects)
     //     }
         const wallet = ConcordiumHdWallet.fromSeedPhrase(seed.value, network);
+        const seedHex = mnemonicToHex(seed.value)
 
-        for(let identityIndex = 0; identityIndex <= 20; identityIndex++){
+        console.log({
+            seedHex
+        })
+
+        
+
+
+        // Buffer.from(mnemonicToSeedSync(seed.value).toString('hex'))
+
+        for(let identityIndex = 0; identityIndex <= 21; identityIndex++){
+
+           
         
                 // ID wallet (from id seed)
-                const idCredSec = wallet.getIdCredSec(identityProviderIndex, identityIndex).toString('hex');
-                const identityRequestInput: IdentityRecoveryRequestWithKeysInput = {
-                    idCredSec,
+                //const idCredSec = wallet.getIdCredSec(identityProviderIndex, identityIndex).toString('hex');
+                 
+                // const identityRequestInput: IdentityRecoveryRequestWithKeysInput = {
+                //     idCredSec,
+                //     ipInfo: selectedIdentityProvider.value.ipInfo,
+                //     globalContext: cryptographicParameters,
+                //     timestamp: Math.floor(Date.now() / 1000),
+                // };
+                const identityRequestInput: IdentityRecoveryRequestInput = {
                     ipInfo: selectedIdentityProvider.value.ipInfo,
                     globalContext: cryptographicParameters,
                     timestamp: Math.floor(Date.now() / 1000),
-                };
-                const identityRecoveryRequest: Versioned<IdRecoveryRequest> = createIdentityRecoveryRequestWithKeys(identityRequestInput)
+                    seedAsHex: seedHex,
+                    net: network, 
+                    identityIndex: identityIndex,
+                }
+
+                console.log({identityRequestInput})
+
+                console.log("...........trying to create identity recovery request for identityIndex: " + identityIndex);
+                const idRecoveryRequest = createIdentityRecoveryRequest(identityRequestInput);
+    
+                const searchParams = new URLSearchParams({
+                    state: JSON.stringify({ idRecoveryRequest }),
+                });
+                const url =  `${selectedIdentityProvider.value.metadata.recoveryStart}?${searchParams.toString()}`;
+                
+                
+                // const identityRecoveryRequest: Versioned<IdRecoveryRequest> = createIdentityRecoveryRequestWithKeys(identityRequestInput)
+
+                    
+
+
             try{
-                const url = await sendIdentityRecoveryRequest(identityRecoveryRequest, selectedIdentityProvider.value.metadata.recoveryStart);
-            
-                console.log(url)
+                // const url = await sendIdentityRecoveryRequest(identityRecoveryRequest, selectedIdentityProvider.value.metadata.recoveryStart);
+                
+                    // console.log({
+                    //     identityProviderIndex, 
+                    //     identityIndex,
+                    //     // idCredSec,
+                    //     idCredPub: idRecoveryRequest.value.idCredPub,
+                    //     proof: idRecoveryRequest.value.proof,
+                    //     timestap: idRecoveryRequest.value.timestamp,
+                    //     callurl,
+                    // })
+                
                 const response = await fetch(url);
                 if (response.ok) {
                     const identity = await response.json();
                     identityObjects.push(identity.value)
                     //identityObjectProxy.value = identity.value
+                } else {
+                    console.error('Failed to recover identity:', response.statusText);
                 }
             }catch(e){
-                console.error(e.message)
+                console.error(e)
                 console.log('continuing... identityIndex = ' + identityIndex)
             }
             
@@ -434,10 +537,11 @@ const recoverIdentityCredentials = async () => {
         // }01...5...10
         for(let i = 0; i < 20; i++){
             const credId = getCredentialId(idSeed, selectedIdentityProvider.value.ipInfo.ipIdentity, cryptographicParameters, i);
+            console.log('Trying to recover credId: ' + credId)
             try{
-                const accountInfo:any = await client.getAccountInfo(CredentialRegistrationId.fromHexString(credId));
+                const accountInfo: any = await client.getAccountInfo(CredentialRegistrationId.fromHexString(credId));
                 accountInfo['credNumber'] = i;
-                accountInfo['identityIndex'] = 0; //hardcoded for now
+                accountInfo['identityIndex'] = i; //hardcoded for now
                 accountInfo['status'] = 'confirmed'
                 identityCredentials.push(accountInfo)
             }catch(e){

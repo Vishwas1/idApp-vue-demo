@@ -110,8 +110,13 @@ export function getAccountSigningKey(seedPhrase: string, identityProviderIdentit
  * accounts could be created.
  */
 export function getCredentialId(seedPhrase: string, identityProviderIdentity: number, global: CryptographicParameters, credNumber: number) {
+    console.log({
+        identityProviderIdentity, 
+        credNumber,
+    })
+
     const wallet = ConcordiumHdWallet.fromSeedPhrase(seedPhrase, network);
-    return wallet.getCredentialId(identityProviderIdentity, identityIndex, credNumber, global).toString('hex');
+    return wallet.getCredentialId(identityProviderIdentity, credNumber, credNumber, global).toString('hex');
 }
 
 /**
@@ -298,13 +303,14 @@ export async function sendIdentityRecoveryRequest(recoveryRequest: IdRecoveryReq
         state: JSON.stringify({ idRecoveryRequest: recoveryRequest }),
     });
     const url = `${baseUrl}?${searchParams.toString()}`;
-    const response = await fetch(url);
+    // const response = await fetch(url);
 
-    if (response.ok) {
-        return response.url;
-    } else {
-        throw new Error((await response.json()).message);
-    }
+    // if (response.ok) {
+    //     return response.url;
+    // } else {
+    //     throw new Error((await response.json()).message);
+    // }
+    return url
 }
 /**
  * Gets information about an account from the node. The method will continue to poll for some time

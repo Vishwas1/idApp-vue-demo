@@ -35,10 +35,10 @@ const idcLength = computed(() => {
 })
 
   const links = [
-    { label: 'Enable Network', to: '/enable-network' },
-    // { label: 'Create ID', to: '/create-identity' },
-    // { label: 'IDs (' + idLength.value + ')', to: '/your-ids' },
-    // { label: 'Create Account', to: '/create-account' },
-    // { label: 'ID Credentials (' + idcLength.value + ')', to: '/your-id-creds' },
+    // { label: 'Enable Network', to: '/enable-network' },
+    { label: 'Create ID', to: '/create-identity' },
+    { label: 'IDs (' + idLength.value + ')', to: '/your-ids' },
+    { label: 'Create Account', to: '/create-account' },
+    { label: 'ID Credentials (' + idcLength.value + ')', to: '/your-id-creds' },
   ]
 </script>
