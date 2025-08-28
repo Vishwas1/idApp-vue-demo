@@ -98,7 +98,7 @@ export function filterRecord<A extends string | number | symbol, B>(
  * accounts could be created.
  */
 export function getAccountSigningKey(seedPhrase: string, identityProviderIdentity: number, credNumber: number =0) {
-    const wallet = ConcordiumHdWallet.fromSeedPhrase(seedPhrase, network);
+    const wallet = ConcordiumHdWallet.fromSeedPhrase(seedPhrase, network as Network);
     return wallet.getAccountSigningKey(identityProviderIdentity, identityIndex, credNumber).toString('hex');
 }
 
@@ -115,7 +115,7 @@ export function getCredentialId(seedPhrase: string, identityProviderIdentity: nu
         credNumber,
     })
 
-    const wallet = ConcordiumHdWallet.fromSeedPhrase(seedPhrase, network);
+    const wallet = ConcordiumHdWallet.fromSeedPhrase(seedPhrase, network as Network);
     return wallet.getCredentialId(identityProviderIdentity, credNumber, credNumber, global).toString('hex');
 }
 

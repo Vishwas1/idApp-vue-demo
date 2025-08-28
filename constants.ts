@@ -1,6 +1,6 @@
 import type { Network } from '@concordium/web-sdk';
 
-export const network: unknown = 'Testnet';
+export const network: unknown = 'Testnet' as Network;
 
 // Local storage keys
 export const seedPhraseKey = 'seed-phrase';
