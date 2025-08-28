@@ -97,6 +97,7 @@
 import { AccountWallet, AccountWalletWC } from '~/account-wallet';
 import { ConcordiumIDAppSDK, ConcordiumIDAppPoup, Status, type CreateAccountResponseMsgType, type SignedCredentialDeploymentTransaction } from "@concordium/id-app-sdk";
 import { ref, watch } from 'vue'
+import type { Network } from '@concordium/web-sdk';
 const acWallet = ref<AccountWallet>()
 const accountWalletConnect = ref<AccountWalletWC>()
 const uri = ref("")
@@ -105,6 +106,7 @@ const showLoader = useState('showLoader')
 const ifConnected = ref(false)
 const publicKey = ref(localStorage.getItem('pk'))
 const accountAddress = ref(localStorage.getItem('accountAddress'))
+const network: Network = 'Testnet'
 
 const reload = () => {
   publicKey.value = localStorage.getItem('pk')
@@ -124,7 +126,7 @@ const disconnectAllSessions = async () => {
   window.location.reload()
 }
 
-const chains = ['Ethereum', 'Concordium', 'Bitcoin']
+const chains = ['Ethereum', 'Concordium ' + '(' + network + ')' ,  'Bitcoin']
 const toggles = reactive(
   chains.reduce((acc, chain) => {
     acc[chain] = false
@@ -195,8 +197,6 @@ const toggleNetwork = async () => {
       alert('Could not connect to wallet connect server, please reload the page and try again in sometime. ')
       return
     }
-
-    
     
     ConcordiumIDAppPoup.invokeIdAppDeepLinkPopup({
       walletConnectUri: accountWalletConnect.value.uri
@@ -264,7 +264,7 @@ const onCreateAccount = async () => {
 
       if (confirm("Signature Request: Please approve to sign the transaction?")) {
         const signedCreddepTx: SignedCredentialDeploymentTransaction = await acWallet.value?.signTransaction(
-          resp.serializedCredentialDeploymentTransaction)
+          resp.serializedCredentialDeploymentTransaction, network)
         if (!signedCreddepTx) {
           alert('Error: Could generate signature')
           return;
@@ -276,7 +276,7 @@ const onCreateAccount = async () => {
         console.log('ConcordiumIDAppSDK.submitCCDTransaction ...')
         try{
               const txHash = await acWallet.value?.submitTransaction(signedCreddepTx.credentialDeploymentTransaction,
-                  signedCreddepTx.signature)
+                  signedCreddepTx.signature, network)
                 console.log({ txHash: txHash?.toString() })
 
                 console.log(result)

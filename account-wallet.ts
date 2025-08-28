@@ -14,7 +14,7 @@ import {
   ConcordiumIDAppPoup,
   type SerializedCredentialDeploymentDetails,
 } from "@concordium/id-app-sdk";
-import type { CredentialDeploymentTransaction, HexString } from "@concordium/web-sdk";
+import type { CredentialDeploymentTransaction, HexString, Network } from "@concordium/web-sdk";
 
 const projectId = "8b6c46b9127ce91195745c124870244e";
 
@@ -235,20 +235,20 @@ export class AccountWallet {
   }
 
 
-  getWallet(){
+  getWallet(network: Network = 'Testnet'){
     // const seed = generateMnemonic(wordlist, 256)
-    const wallet = ConcordiumIDAppSDK.generateAccountWithSeedPhrase(this.seed, 'Testnet', 0)
+    const wallet = ConcordiumIDAppSDK.generateAccountWithSeedPhrase(this.seed, network, 0)
     return wallet
   }
 
-  async signTransaction(serializedCredentialDeploymentTransaction: SerializedCredentialDeploymentDetails){
-    const wallet = this.getWallet()
+  async signTransaction(serializedCredentialDeploymentTransaction: SerializedCredentialDeploymentDetails, network: Network = 'Testnet') {
+    const wallet = this.getWallet(network)
     return await ConcordiumIDAppSDK.signCredentialTransaction(serializedCredentialDeploymentTransaction, wallet.signingKey);
   }
 
-  async submitTransaction(credentialDeploymentTransaction: CredentialDeploymentTransaction, signature: HexString){
+  async submitTransaction(credentialDeploymentTransaction: CredentialDeploymentTransaction, signature: HexString, network: Network = 'Testnet'){
     // eslint-disable @typescript-eslint/no-explicit-any //
-    return await ConcordiumIDAppSDK.submitCCDTransaction(credentialDeploymentTransaction, signature, 'Testnet')
+    return await ConcordiumIDAppSDK.submitCCDTransaction(credentialDeploymentTransaction, signature, network)
   }
 
   async createCCDAccount(): Promise<{create_acc_resp?: CreateAccountCreationResponse, public_key?: string, account_address?:string, txHash?:string } | undefined> {

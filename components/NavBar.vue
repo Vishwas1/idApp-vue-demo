@@ -35,7 +35,9 @@ const idcLength = computed(() => {
 })
 
   const links = [
-    { label: 'Enable Network', to: '/enable-network' },
+    
+    { label: 'Enable Network ', to: '/enable-network-mainnet' },
+    { label: 'Enable Network (Testnet)', to: '/enable-network-testnet' },
     // { label: 'Create ID', to: '/create-identity' },
     // { label: 'IDs (' + idLength.value + ')', to: '/your-ids' },
     // { label: 'Create Account', to: '/create-account' },
