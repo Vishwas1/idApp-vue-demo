@@ -235,26 +235,26 @@ export class AccountWallet {
   }
 
 
-  getWallet(network: Network = 'Testnet'){
+  getWallet(network: Network){
     // const seed = generateMnemonic(wordlist, 256)
     const wallet = ConcordiumIDAppSDK.generateAccountWithSeedPhrase(this.seed, network, 0)
     return wallet
   }
 
-  async signTransaction(serializedCredentialDeploymentTransaction: SerializedCredentialDeploymentDetails, network: Network = 'Testnet') {
+  async signTransaction(serializedCredentialDeploymentTransaction: SerializedCredentialDeploymentDetails, network: Network) {
     const wallet = this.getWallet(network)
     return await ConcordiumIDAppSDK.signCredentialTransaction(serializedCredentialDeploymentTransaction, wallet.signingKey);
   }
 
-  async submitTransaction(credentialDeploymentTransaction: CredentialDeploymentTransaction, signature: HexString, network: Network = 'Testnet'){
+  async submitTransaction(credentialDeploymentTransaction: CredentialDeploymentTransaction, signature: HexString, network: Network){
     // eslint-disable @typescript-eslint/no-explicit-any //
     return await ConcordiumIDAppSDK.submitCCDTransaction(credentialDeploymentTransaction, signature, network)
   }
 
-  async createCCDAccount(): Promise<{create_acc_resp?: CreateAccountCreationResponse, public_key?: string, account_address?:string, txHash?:string } | undefined> {
+  async createCCDAccount(network: Network): Promise<{create_acc_resp?: CreateAccountCreationResponse, public_key?: string, account_address?:string, txHash?:string } | undefined> {
     // try {
       localStorage.removeItem('pk')
-      const wallet = this.getWallet()
+      const wallet = this.getWallet(network)
       const public_key = wallet.publicKey
       localStorage.setItem('pk', public_key)
       

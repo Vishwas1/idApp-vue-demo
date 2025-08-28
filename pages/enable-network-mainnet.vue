@@ -244,7 +244,7 @@ const onCreateAccount = async () => {
   console.log('beefore calling createCCDAccount...')
 
   // send  the request to create the account
-  acWallet.value?.createCCDAccount().then(async (result) => {
+  acWallet.value?.createCCDAccount(network).then(async (result) => {
     if (!result) {
       alert('Error: Could not create account from Idapp')
       return;
