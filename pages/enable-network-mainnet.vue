@@ -295,7 +295,7 @@ const onCreateAccount = async () => {
     } else {
       console.log(create_acc_resp)
       alert(`Request rejected : ${create_acc_resp?.message?.details} `)
-      window.location.reload()
+      // window.location.reload()
     }
   }).catch(e => {
       ConcordiumIDAppPoup.closePopup()
