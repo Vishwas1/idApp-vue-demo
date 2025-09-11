@@ -111,7 +111,7 @@ export class AccountWalletWC {
       console.log("Connecting to wallet...");
       console.log('Using chainId for WC session proposal:', chainId)
       const { uri, approval } = await this.wc_client.connect({
-        optionalNamespace: {
+        optionalNamespaces: {
           concordium: {
             methods: [IDAppSdkWallectConnectMethods.CREATE_ACCOUNT, IDAppSdkWallectConnectMethods.RECOVER_ACCOUNT],
             chains: [chainId],
@@ -126,9 +126,14 @@ export class AccountWalletWC {
       approval().then((x: unknown) => {
         console.log("Session approved:", x);        
         this.session = x
+      
         console.log('Session expires at:', this.formatExpiryIST(this.session.expiry));
         this.printPairing()
         this.printSessions()
+        ConcordiumIDAppPoup.closePopup()
+      }).catch((e: unknown) => {
+        console.log("Session rejected:", e);
+        alert("Session rejected: " + e)
         ConcordiumIDAppPoup.closePopup()
       });
       return uri

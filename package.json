@@ -12,6 +12,7 @@
     "deploy": "./deploy.sh"
   },
   "dependencies": {
+    "@concordium/id-app-sdk": "^0.1.3",
     "@concordium/web-sdk": "^9.1.0",
     "@nuxt/content": "^3.4.0",
     "@nuxt/eslint": "^1.3.0",
