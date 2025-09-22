@@ -219,7 +219,7 @@ const wcConnect = async () => {
     ConcordiumIDAppPoup.closePopup()
     return
   }
-  await accountWalletConnect.value.connect(ConcordiumIDAppSDK.chainId)
+  await accountWalletConnect.value.connect(ConcordiumIDAppSDK.chainId.Testnet)
 }
 
 const openIdapp = async () => {

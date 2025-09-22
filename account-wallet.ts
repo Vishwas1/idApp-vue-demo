@@ -94,7 +94,7 @@ export class AccountWalletWC {
     }
   }
 
-  async connect(chainId: string = "eip155:1") {
+  async connect(chainId: string) {
     try {
       if (!this.wc_client) throw new Error("SDK not initialized");
 
@@ -109,8 +109,9 @@ export class AccountWalletWC {
       
       // Create a new session if not exists 
       console.log("Connecting to wallet...");
+      console.log('Using chainId for WC session proposal:', chainId)
       const { uri, approval } = await this.wc_client.connect({
-        optionalNamespace: {
+        optionalNamespaces: {
           concordium: {
             methods: [IDAppSdkWallectConnectMethods.CREATE_ACCOUNT, IDAppSdkWallectConnectMethods.RECOVER_ACCOUNT],
             chains: [chainId],
@@ -125,9 +126,14 @@ export class AccountWalletWC {
       approval().then((x: unknown) => {
         console.log("Session approved:", x);        
         this.session = x
+      
         console.log('Session expires at:', this.formatExpiryIST(this.session.expiry));
         this.printPairing()
         this.printSessions()
+        ConcordiumIDAppPoup.closePopup()
+      }).catch((e: unknown) => {
+        console.log("Session rejected:", e);
+        alert("Session rejected: " + e)
         ConcordiumIDAppPoup.closePopup()
       });
       return uri
@@ -204,7 +210,8 @@ export class AccountWalletWC {
         console.log('No session found to disconnect...')
       }
   }
-  async request(method: string = "custom_message", chainId: string = "eip155:1", message: any) {
+  async request(method: string = "custom_message", chainId: string, message: any) {
+    console.log('Inside request method:', { chainId})
     if (!this.wc_client) throw new Error("SDK not initialized");
 
     if (!this.session) {
@@ -212,6 +219,7 @@ export class AccountWalletWC {
       console.log('Retrived sessions being used... ' + this.session.topic)
     }
 
+    
     // Send a custom message
     const result = await this.wc_client.request({
       topic: this.session.topic,
@@ -264,7 +272,7 @@ export class AccountWallet {
       console.log('Sending account creation request with public_key ' + public_key)
       const create_acc_resp: CreateAccountCreationResponse = await this.accountWallet.request(
         IDAppSdkWallectConnectMethods.CREATE_ACCOUNT,
-        ConcordiumIDAppSDK.chainId,
+        network == 'Mainnet'? ConcordiumIDAppSDK.chainId.Mainnet : ConcordiumIDAppSDK.chainId.Testnet,
         new_account_request)
 
       return {create_acc_resp, public_key}
@@ -275,10 +283,10 @@ export class AccountWallet {
     // }
   }
 
-  async recoverCCDAccount(public_key: string) {
+  async recoverCCDAccount(public_key: string, network: Network = 'Mainnet') {
     const account_recovery_request: RecoverAccountCreationRequestMessage = ConcordiumIDAppSDK.getRecoverAccountRecoveryRequest(public_key);
     console.log('Sending account recovery request with public_key ' + public_key)
-    const recover_acc_resp: RecoverAccountResponse = await this.accountWallet.request(IDAppSdkWallectConnectMethods.RECOVER_ACCOUNT, ConcordiumIDAppSDK.chainId, account_recovery_request)
+    const recover_acc_resp: RecoverAccountResponse = await this.accountWallet.request(IDAppSdkWallectConnectMethods.RECOVER_ACCOUNT, network == 'Mainnet' ? ConcordiumIDAppSDK.chainId.Mainnet : ConcordiumIDAppSDK.chainId.Testnet, account_recovery_request)
     if (recover_acc_resp.status == Status.SUCCESS) {
       const message: RecoverAccountMsgType = recover_acc_resp.message  as RecoverAccountMsgType
       console.log('Recieved account recovery response address ' + message.accountAddress)
