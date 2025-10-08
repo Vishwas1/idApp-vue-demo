@@ -78,6 +78,7 @@ async function generateChallenge() {
   const body = {
     walletAddress: walletInfo.walletAddress,
     context: "IDProofVerification",
+    network: "devnet",
     contextDetails: {
       age: 18,
       operator: "gte",
@@ -136,6 +137,7 @@ async function verify() {
   const accessToken = localStorage.getItem("accessToken");
 
   const presentationToVerify = zk_proof.value;
+  const body = { ...presentationToVerify, network: "devnet" };
   verifyZKProofRequest.value = presentationToVerify;
   try {
     const resp = await fetch(`http://ai-plugin.nanocorp.io:3006/api/v1/verify/id-proof`, {
@@ -145,7 +147,7 @@ async function verify() {
         "x-api-secret": "concordium_secret",
         authorization: `Bearer ${accessToken}`,
       },
-      body: presentationToVerify.toString(),
+      body: JSON.stringify(body),
     });
 
     if (!resp.ok) {

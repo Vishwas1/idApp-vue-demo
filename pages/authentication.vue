@@ -94,6 +94,7 @@ async function generateChallenge() {
     },
     body: JSON.stringify({
       context: "Login",
+      network: "devnet",
     }),
   });
   if (!resp.ok) {

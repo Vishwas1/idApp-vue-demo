@@ -94,10 +94,13 @@ async function generateChallenge() {
   const body = {
     walletAddress: walletInfo.walletAddress,
     context: "Payment",
+    network: "devnet",
     contextDetails: {
       amount: "1",
       purpose: "Testing payment flow",
       tokenSymbol: "TestDevnetDenylist",
+      decimal: 2,
+      recipientWalletAddress:"3Y5mmcLZ7C61iqFqW3uZ8WteamDtybhuoPobj5LApVFs8rEwuw"
     },
   };
   challengeRequest.value = body;
@@ -158,7 +161,10 @@ async function payPlt() {
 
 async function verify() {
   const accessToken = localStorage.getItem("accessToken");
-  const body = { txHash: pltTransactionHash.value };
+    const walletInfo = JSON.parse(
+    localStorage.getItem("connectedWallet") || "{}"
+  );
+  const body = { txHash: pltTransactionHash.value, network: "devnet" , walletAddress:walletInfo.walletAddress};
   verifyPaymentRequest.value = body;
   try {
     const resp = await fetch(`http://ai-plugin.nanocorp.io:3006/api/v1/verify/tx-hash`, {
