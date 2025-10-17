@@ -99,12 +99,14 @@ async function generateChallenge() {
       amount: "1",
       purpose: "Testing payment flow",
       tokenSymbol: "TestDevnetDenylist",
+      tokenType:"plt",
       decimal: 2,
-      recipientWalletAddress:"3Y5mmcLZ7C61iqFqW3uZ8WteamDtybhuoPobj5LApVFs8rEwuw"
+      recipientWalletAddress:
+        "4ZeyyKBrAaRaXe7T1QqxWFsa61Qzt2mnJskJZ5A2bH8bwRXzjh",
     },
   };
   challengeRequest.value = body;
-  const resp = await fetch(`http://ai-plugin.nanocorp.io:3006/api/v1/challenge`, {
+  const resp = await fetch(`https://ai-plugin.nanocorp.io/api/v1/challenge`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -161,13 +163,17 @@ async function payPlt() {
 
 async function verify() {
   const accessToken = localStorage.getItem("accessToken");
-    const walletInfo = JSON.parse(
+  const walletInfo = JSON.parse(
     localStorage.getItem("connectedWallet") || "{}"
   );
-  const body = { txHash: pltTransactionHash.value, network: "devnet" , walletAddress:walletInfo.walletAddress};
+  const body = {
+    txHash: pltTransactionHash.value,
+    network: "testnet",
+    walletAddress: walletInfo.walletAddress,
+  };
   verifyPaymentRequest.value = body;
   try {
-    const resp = await fetch(`http://ai-plugin.nanocorp.io:3006/api/v1/verify/tx-hash`, {
+    const resp = await fetch(`https://ai-plugin.nanocorp.io/api/v1/verify/tx-hash`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

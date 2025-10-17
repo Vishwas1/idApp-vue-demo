@@ -78,7 +78,7 @@ async function generateChallenge() {
   const body = {
     walletAddress: walletInfo.walletAddress,
     context: "IDProofVerification",
-    network: "devnet",
+    network: "testnet",
     contextDetails: {
       age: 18,
       operator: "gte",
@@ -86,15 +86,18 @@ async function generateChallenge() {
     },
   };
   challengeRequest.value = body;
-  const resp = await fetch(`http://ai-plugin.nanocorp.io:3006/api/v1/challenge`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-secret": "concordium_secret",
-      authorization: `Bearer ${accessToken}`,
-    },
-    body: JSON.stringify(body),
-  });
+  const resp = await fetch(
+    `https://ai-plugin.nanocorp.io/api/v1/challenge`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-secret": "concordium_secret",
+        authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify(body),
+    }
+  );
   if (!resp.ok) {
     throw new Error("Unable to generate challenge");
   } else {
@@ -140,15 +143,18 @@ async function verify() {
   const body = { ...presentationToVerify, network: "devnet" };
   verifyZKProofRequest.value = presentationToVerify;
   try {
-    const resp = await fetch(`http://ai-plugin.nanocorp.io:3006/api/v1/verify/id-proof`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-secret": "concordium_secret",
-        authorization: `Bearer ${accessToken}`,
-      },
-      body: JSON.stringify(body),
-    });
+    const resp = await fetch(
+      `https://ai-plugin.nanocorp.io/api/v1/verify/id-proof`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-secret": "concordium_secret",
+          authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify(body),
+      }
+    );
 
     if (!resp.ok) {
       throw new Error("Presentation not verified");
