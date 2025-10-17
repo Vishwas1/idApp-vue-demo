@@ -140,7 +140,7 @@ async function verify() {
   const accessToken = localStorage.getItem("accessToken");
 
   const presentationToVerify = zk_proof.value;
-  const body = { ...presentationToVerify, network: "devnet" };
+  const body = { ...presentationToVerify, network: "testnet" };
   verifyZKProofRequest.value = presentationToVerify;
   try {
     const resp = await fetch(
