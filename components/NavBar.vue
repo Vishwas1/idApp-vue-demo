@@ -33,5 +33,6 @@ const links = [
   { label: "Authentication", to: "/authentication" },
   { label: "VerifyId", to: "/idVerification" },
   { label: "Payment", to: "/payment" },
+  { label: "CCDPayment", to: "/ccd_payment" },
 ];
 </script>

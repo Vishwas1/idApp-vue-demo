@@ -2,7 +2,7 @@
   <UContainer>
     <div class="flex flex-col gap-2">
       <UCard style="width: 100%">
-          <div class="mt-2">
+        <div class="mt-2">
           <strong>Request:</strong>
           <pre class="bg-gray-100 p-2 rounded text-sm">{{
             JSON.stringify(challengeRequest, null, 2)
@@ -94,7 +94,7 @@ async function generateChallenge() {
     },
     body: JSON.stringify({
       context: "Login",
-      network: "testnet"
+      network: "testnet",
     }),
   });
   if (!resp.ok) {
