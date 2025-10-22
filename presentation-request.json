@@ -1,0 +1,46 @@
+{
+  "requestContext": {
+    "type": "ConcordiumContextInformationV1",
+    "given": [
+      {
+        "label": "Nonce",
+        "context": "070100010005000100080801000004000004000809000000030000000002020005000400"
+      },
+      {
+        "label": "ConnectionID",
+        "context": "connection-id-001"
+      },
+      {
+        "label": "ContextString",
+        "context": "My compliant web3 wine shop"
+      }
+    ],
+    "requested": [
+      "BlockHash",
+      "ResourceID"
+    ]
+  },
+  "credentialStatements": [
+    {
+      "idQualifier": {
+        "type": "id",
+        "issuers": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ]
+      },
+      "statement": [
+        {
+          "type": "AttributeInRange",
+          "attributeTag": "dob",
+          "lower": "18000101",
+          "upper": "20071022"
+        }
+      ]
+    }
+  ],
+  "transactionRef": "be520a1147ea8f326f85ea63b7af5cd57c563885c81291c32128e3aff4ab4cdb"
+}
