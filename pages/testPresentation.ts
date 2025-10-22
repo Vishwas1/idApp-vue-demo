@@ -63,14 +63,6 @@ export class TestConcordiumService {
     }
 
     const vpr = VerifiablePresentationRequestV1.fromJSON(presentationRequest as VerifiablePresentationRequestV1.JSON)
-
-
-    const hashBytes = await computeAnchorHash(vpr.requestContext, vpr.credentialStatements);
-    const hashHex = Array.from(hashBytes)
-    .map(b => b.toString(16).padStart(2, '0'))
-    .join('');
-
-    console.log('Anchor hash (hex):', hashHex);
     
     if (!IdpList) {
       throw new Error('IDP Testnet file not found');
