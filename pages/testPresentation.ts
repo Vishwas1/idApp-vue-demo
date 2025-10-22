@@ -16,7 +16,6 @@ import {
   createIdentityCommitmentInputWithHdWallet,
   ConcordiumGRPCWebClient,
   VerifiablePresentationRequestV1,
-  sha256,
 } from '@concordium/web-sdk';
 import _JB from 'json-bigint';
 
@@ -25,25 +24,6 @@ import IdentityObject from '../id-object.json';
 import IdpList from '../idp-testnet.json';
 import presentationRequest from '../presentation-request.json'
 
-const JSONBig = _JB({ useNativeBigInt: true, alwaysParseAsBig: true });
-
-export async function computeAnchorHash(
-  context: unknown,
-  credentialStatements: unknown
-): Promise<Uint8Array> {
-  const encoder = new TextEncoder();
-  const contextBytes = encoder.encode(JSONBig.stringify(context));
-  const statementsBytes = encoder.encode(JSONBig.stringify(credentialStatements));
-
-  // Sequential update simulation using Web Crypto API
-  // Concatenate manually, as subtle.digest doesn't support incremental updates
-  const combined = new Uint8Array(contextBytes.length + statementsBytes.length);
-  combined.set(contextBytes, 0);
-  combined.set(statementsBytes, contextBytes.length);
-
-  const hashBuffer = await crypto.subtle.digest('SHA-256', combined);
-  return new Uint8Array(hashBuffer);
-}
 
 const testnet  = {
   genesisHash: '4221332d34e1694168c2a0c0b3fd0f273809612cb13d000d5c2e00e85f50f796',
