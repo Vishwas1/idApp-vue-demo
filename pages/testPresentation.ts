@@ -64,7 +64,7 @@ export class TestConcordiumService {
         const atomicCredentialStatements: AtomicStatementV2[] = credStatement.statement;
         // This is gives results for each atomic statement, returns true/false 
         atomicCredentialStatements.forEach(atomicStatement => {
-          console.log('Check each for type ' + atomicStatement.type + ' = ' + canProveAtomicStatement(atomicStatement, IdentityObject.idObject.value.attributeList.chosenAttributes))
+          console.log('Check each for ' + atomicStatement.type + ' = ' + canProveAtomicStatement(atomicStatement, IdentityObject.idObject.value.attributeList.chosenAttributes))
         })  
       }
     })
