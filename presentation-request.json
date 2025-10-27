@@ -4,7 +4,7 @@
     "given": [
       {
         "label": "Nonce",
-        "context": "070100010005000100080801000004000004000809000000030000000002020005000400"
+        "context": "000500000100020000080400080004070205000008000000050000060000000900010003"
       },
       {
         "label": "ConnectionID",
@@ -37,10 +37,76 @@
           "type": "AttributeInRange",
           "attributeTag": "dob",
           "lower": "18000101",
-          "upper": "20071022"
+          "upper": "20071028"
+        },
+        {
+          "type": "AttributeInSet",
+          "attributeTag": "countryOfResidence",
+          "set": [
+            "AT",
+            "BE",
+            "BG",
+            "CY",
+            "CZ",
+            "DK",
+            "EE",
+            "FI",
+            "FR",
+            "DE",
+            "GR",
+            "HU",
+            "IE",
+            "IT",
+            "LV",
+            "LT",
+            "LU",
+            "MT",
+            "NL",
+            "PL",
+            "PT",
+            "RO",
+            "SK",
+            "SI",
+            "ES",
+            "SE",
+            "HR"
+          ]
+        },
+        {
+          "type": "AttributeInSet",
+          "attributeTag": "nationality",
+          "set": [
+            "AT",
+            "BE",
+            "BG",
+            "CY",
+            "CZ",
+            "DK",
+            "EE",
+            "FI",
+            "FR",
+            "DE",
+            "GR",
+            "HU",
+            "IE",
+            "IT",
+            "LV",
+            "LT",
+            "LU",
+            "MT",
+            "NL",
+            "PL",
+            "PT",
+            "RO",
+            "SK",
+            "SI",
+            "ES",
+            "SE",
+            "HR"
+          ]
         }
       ]
     }
   ],
-  "transactionRef": "be520a1147ea8f326f85ea63b7af5cd57c563885c81291c32128e3aff4ab4cdb"
+  "transactionRef": "77043ef7beb6c597e4596316de59a987b023418ac49971ea8e51368404872b34"
 }

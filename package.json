@@ -12,8 +12,8 @@
     "deploy": "./deploy.sh"
   },
   "dependencies": {
+    "@concordium/web-sdk": "12.0.0-alpha.1",
     "@concordium/id-app-sdk": "^0.1.3",
-    "@concordium/web-sdk": "^9.1.0",
     "@nuxt/content": "^3.4.0",
     "@nuxt/eslint": "^1.3.0",
     "@nuxt/fonts": "^0.11.1",
@@ -28,13 +28,15 @@
     "@unhead/vue": "^2.0.8",
     "@walletconnect/sign-client": "^2.20.0",
     "@walletconnect/types": "^2.20.0",
-    "better-sqlite3": "^12.0.0",
+    "better-sqlite3": "^12.4.1",
     "eslint": "^9.25.1",
+    "json-bigint": "^1.0.0",
     "nuxt": "^3.16.2",
     "vue": "^3.5.13",
     "vue-router": "^4.5.0"
   },
   "devDependencies": {
+    "@types/json-bigint": "^1.0.4",
     "cross-env": "^7.0.3",
     "gh-pages": "^6.3.0"
   }

@@ -1,9 +1,23 @@
 <script setup lang="ts">
 import { NuxtPage } from '#components';
+import { TestConcordiumService } from './pages/testPresentation';
 
-
+const testP = new TestConcordiumService()
 const showLoader = useState('showLoader', () => false)
 
+
+onMounted(() => {
+    
+    console.log('Inside app.vue onmounted');
+    testP.getPresentation().then(() => {
+        console.log('Presentation process completed');
+    }).catch((error) => {
+        console.log(error)
+        console.error('Error during presentation process:', error);
+    })
+
+    
+})
 
 const clearStore = () => {
     localStorage.removeItem('identity-objects')

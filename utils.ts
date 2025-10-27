@@ -4,7 +4,6 @@ import type {
     AccountTransaction,
     AccountTransactionHeader,
     CcdAmount,
-    CredentialDeploymentTransaction,
     CryptographicParameters,
     IdObjectRequestV1,
     IdRecoveryRequest,
@@ -23,7 +22,7 @@ import {
     signTransaction,
 } from '@concordium/web-sdk';
 
-import { credNumber, identityIndex, network, nodeAddress, nodePort, walletProxyBaseUrl } from './constants';
+import {  identityIndex, network, nodeAddress, nodePort, walletProxyBaseUrl } from './constants';
 import type { IdentityProviderWithMetadata, IdentityTokenContainer } from './types';
 import { IdentityProviderIdentityStatus } from './types';
 
@@ -244,7 +243,7 @@ export function createCredentialDeploymentKeysAndRandomness(
  * @returns a promise with the transaction hash of the submitted credential deployment
  */
 export async function sendCredentialDeploymentTransaction(
-    credentialDeployment: CredentialDeploymentTransaction,
+    credentialDeployment: any,
     signature: string
 ) {
     const payload = serializeCredentialDeploymentPayload([signature], credentialDeployment);

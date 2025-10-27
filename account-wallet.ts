@@ -14,7 +14,7 @@ import {
   ConcordiumIDAppPoup,
   type SerializedCredentialDeploymentDetails,
 } from "@concordium/id-app-sdk";
-import type { CredentialDeploymentTransaction, HexString, Network } from "@concordium/web-sdk";
+import type { HexString, Network } from "@concordium/web-sdk";
 
 const projectId = "8b6c46b9127ce91195745c124870244e";
 
@@ -254,7 +254,7 @@ export class AccountWallet {
     return await ConcordiumIDAppSDK.signCredentialTransaction(serializedCredentialDeploymentTransaction, wallet.signingKey);
   }
 
-  async submitTransaction(credentialDeploymentTransaction: CredentialDeploymentTransaction, signature: HexString, network: Network){
+  async submitTransaction(credentialDeploymentTransaction: unknown, signature: HexString, network: Network){
     // eslint-disable @typescript-eslint/no-explicit-any //
     return await ConcordiumIDAppSDK.submitCCDTransaction(credentialDeploymentTransaction, signature, network)
   }

@@ -8,7 +8,11 @@ import type {
   CommitmentInput,
   DIDString,
   SpecifiedCredentialStatement,
-  CredentialStatement} from '@concordium/web-sdk';
+  CredentialStatement,
+  CredentialStatements,
+  verifyAtomicStatements,
+  AtomicStatementV2,
+} from '@concordium/web-sdk';
 import {
   VerifiablePresentationV1,
   createIdentityDID,
@@ -16,6 +20,10 @@ import {
   createIdentityCommitmentInputWithHdWallet,
   ConcordiumGRPCWebClient,
   VerifiablePresentationRequestV1,
+  canProveCredentialStatement,
+  isAccountCredentialStatement,
+  isIdentityCredentialStatement,
+  canProveAtomicStatement,
 } from '@concordium/web-sdk';
 import _JB from 'json-bigint';
 
@@ -42,7 +50,24 @@ export class TestConcordiumService {
         throw new Error('Presentation request file not found');
     }
 
-    const vpr = VerifiablePresentationRequestV1.fromJSON(presentationRequest as VerifiablePresentationRequestV1.JSON)
+    
+    const vpr: VerifiablePresentationRequestV1.Type = VerifiablePresentationRequestV1.fromJSON(presentationRequest as VerifiablePresentationRequestV1.JSON)
+    const credentialStatements: CredentialStatements = vpr.credentialStatements;
+    
+    credentialStatements.forEach(credStatement => {
+      // this gives cumulative result 
+      const cumulativeResult  = canProveCredentialStatement(credStatement, IdentityObject.idObject.value.attributeList.chosenAttributes)
+      console.log('Cumulative check results of ALL Atomic Statements  = ' + cumulativeResult)
+
+      if(!cumulativeResult){
+        console.log('One or more criteia did not match')
+        const atomicCredentialStatements: AtomicStatementV2[] = credStatement.statement;
+        // This is gives results for each atomic statement, returns true/false 
+        atomicCredentialStatements.forEach(atomicStatement => {
+          console.log('Check each for type ' + atomicStatement.type + ' = ' + canProveAtomicStatement(atomicStatement, IdentityObject.idObject.value.attributeList.chosenAttributes))
+        })  
+      }
+    })
     
     if (!IdpList) {
       throw new Error('IDP Testnet file not found');
@@ -58,7 +83,7 @@ export class TestConcordiumService {
     ) as IdentityProvider;
     const identityIndex = IdentityObject.index;
     const seed =
-      'wrong cloth thank upgrade fee harsh pumpkin future letter artefact end home upon camp curious quality report hope stamp voyage chalk youth review average';
+      'throw action salad convince north kit zero rude mango whip dinner situate remove maple oval draw diesel envelope inmate laptop hill visa magic stand';
     const wallet: ConcordiumHdWallet = ConcordiumHdWallet.fromSeedPhrase(
       seed,
       'Testnet',
@@ -94,7 +119,7 @@ export class TestConcordiumService {
     );
  
 
-    console.log('Presentation created:', presentation);
+    console.log('Presentation created:', JSON.stringify(presentation, null, 2));
 
     return presentation;
   }
