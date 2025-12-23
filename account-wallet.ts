@@ -7,10 +7,6 @@ import {
   type CreateAccountCreationRequestMessage,
   IDAppSdkWallectConnectMethods,
   type CreateAccountCreationResponse,
-  type RecoverAccountCreationRequestMessage,
-  Status,
-  type RecoverAccountResponse,
-  type RecoverAccountMsgType,
   ConcordiumIDAppPoup,
   type SerializedCredentialDeploymentDetails,
 } from "@concordium/id-app-sdk";
@@ -110,13 +106,18 @@ export class AccountWalletWC {
       // Create a new session if not exists 
       console.log("Connecting to wallet...");
       console.log('Using chainId for WC session proposal:', chainId)
+      const namespace= {
+         concordium: {
+            methods: [IDAppSdkWallectConnectMethods.CREATE_ACCOUNT],
+            chains: [chainId],
+            events: [IDAppSdkWallectConnectMethods.CREATE_ACCOUNT],
+          }
+      }
+
+      console.log(JSON.stringify(namespace, null, 2))
       const { uri, approval } = await this.wc_client.connect({
         optionalNamespaces: {
-          concordium: {
-            methods: [IDAppSdkWallectConnectMethods.CREATE_ACCOUNT, IDAppSdkWallectConnectMethods.RECOVER_ACCOUNT],
-            chains: [chainId],
-            events: [IDAppSdkWallectConnectMethods.CREATE_ACCOUNT, IDAppSdkWallectConnectMethods.RECOVER_ACCOUNT],
-          },
+          ...namespace
         },
         pairingTopic: undefined//existingPairing?.topic,
       });
@@ -284,16 +285,19 @@ export class AccountWallet {
   }
 
   async recoverCCDAccount(public_key: string, network: Network = 'Mainnet') {
-    const account_recovery_request: RecoverAccountCreationRequestMessage = ConcordiumIDAppSDK.getRecoverAccountRecoveryRequest(public_key);
-    console.log('Sending account recovery request with public_key ' + public_key)
-    const recover_acc_resp: RecoverAccountResponse = await this.accountWallet.request(IDAppSdkWallectConnectMethods.RECOVER_ACCOUNT, network == 'Mainnet' ? ConcordiumIDAppSDK.chainId.Mainnet : ConcordiumIDAppSDK.chainId.Testnet, account_recovery_request)
-    if (recover_acc_resp.status == Status.SUCCESS) {
-      const message: RecoverAccountMsgType = recover_acc_resp.message  as RecoverAccountMsgType
-      console.log('Recieved account recovery response address ' + message.accountAddress)
-      return { account_address: message.accountAddress }
-    } else {
-      console.log('Error in account recovery response: ' + recover_acc_resp.status)
-      throw new Error("Could not reciever recovery response") ///// 
+    // const account_recovery_request: RecoverAccountCreationRequestMessage = ConcordiumIDAppSDK.getRecoverAccountRecoveryRequest(public_key);
+    // console.log('Sending account recovery request with public_key ' + public_key)
+    // const recover_acc_resp: RecoverAccountResponse = await this.accountWallet.request(IDAppSdkWallectConnectMethods.RECOVER_ACCOUNT, network == 'Mainnet' ? ConcordiumIDAppSDK.chainId.Mainnet : ConcordiumIDAppSDK.chainId.Testnet, account_recovery_request)
+    // if (recover_acc_resp.status == Status.SUCCESS) {
+    //   const message: RecoverAccountMsgType = recover_acc_resp.message  as RecoverAccountMsgType
+    //   console.log('Recieved account recovery response address ' + message.accountAddress)
+    //   return { account_address: message.accountAddress }
+    // } else {
+    //   console.log('Error in account recovery response: ' + recover_acc_resp.status)
+    //   throw new Error("Could not reciever recovery response") ///// 
+    // }
+    return {
+      account_address : "test"
     }
   }
 }
