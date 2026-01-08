@@ -107,7 +107,7 @@ export class AccountWalletWC {
       console.log("Connecting to wallet...");
       console.log('Using chainId for WC session proposal:', chainId)
       const namespace= {
-         concordium: {
+         ccd: {
             methods: [IDAppSdkWallectConnectMethods.CREATE_ACCOUNT],
             chains: [chainId],
             events: [IDAppSdkWallectConnectMethods.CREATE_ACCOUNT],
