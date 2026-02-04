@@ -19,6 +19,7 @@ export class AccountWalletWC {
   public session: any = null
   private approval: any
   public uri: string = "";
+  public onSessionApproved?: (session: any) => void;
   
   async initClient() {
     this.wc_client = await SignClient.init({
@@ -132,6 +133,11 @@ export class AccountWalletWC {
         this.printPairing()
         this.printSessions()
         ConcordiumIDAppPoup.closePopup()
+        
+        // Trigger callback if provided
+        if (this.onSessionApproved) {
+          this.onSessionApproved(this.session);
+        }
       }).catch((e: unknown) => {
         console.log("Session rejected:", e);
         alert("Session rejected: " + e)
