@@ -24,7 +24,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from "vue";
 import { ConcordiumMerchantSDK } from "merchant-sdk";
-import "merchant-sdk/dist/merchant-sdk.css";
+import "merchant-sdk/dist/concordium-merchant-sdk.css";
 import { AccountWalletWC } from "~/account-wallet";
 import { useVerification } from "~/composables/useVerification";
 
