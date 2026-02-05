@@ -41,7 +41,7 @@ const initSDK = (walletConnectURI?: string) => {
   if (!sdk.value) {
     sdk.value = new ConcordiumMerchantSDK({
       network: "testnet",
-      // walletConnectUri: walletConnectURI,
+      walletConnectUri: walletConnectURI,
     });
   }
 };
