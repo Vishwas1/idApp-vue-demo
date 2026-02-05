@@ -24,13 +24,13 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from "vue";
-import { MerchantSDK } from "merchant-sdk/vue";
+import { ConcordiumMerchantSDK } from "merchant-sdk";
 import "merchant-sdk/dist/merchant-sdk.css";
 import { useVerification } from "~/composables/useVerification";
 
 const isToggled = ref(false);
 const connected = ref(false);
-const sdk = ref<MerchantSDK | null>(null);
+const sdk = ref<ConcordiumMerchantSDK | null>(null);
 
 // Initialize verification composable
 const { requestChallenge, verifyProof } = useVerification();
@@ -57,7 +57,7 @@ const connectWalletSDKManaged = async () => {
 };
 
 const initSDK = () => {
-  sdk.value = new MerchantSDK({
+  sdk.value = new ConcordiumMerchantSDK({
     network: "testnet",
     // New API: projectId and metadata at top level
     projectId: "60b3730563f0be9f7ed3776d813f6498",
@@ -147,11 +147,11 @@ const handleSDKEvent = async (event: any) => {
 
 onMounted(() => {
   // Listen to SDK events
-  window.addEventListener("concordium-sdk-event", handleSDKEvent);
+  window.addEventListener("concordium-merchant-sdk-event", handleSDKEvent);
 });
 
 onBeforeUnmount(() => {
   // Clean up event listener
-  window.removeEventListener("concordium-sdk-event", handleSDKEvent);
+  window.removeEventListener("concordium-merchant-sdk-event", handleSDKEvent);
 });
 </script>

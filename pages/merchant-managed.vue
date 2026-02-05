@@ -23,14 +23,14 @@
 </template>
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from "vue";
-import { MerchantSDK } from "merchant-sdk/vue";
+import { ConcordiumMerchantSDK } from "merchant-sdk/vue";
 import "merchant-sdk/dist/merchant-sdk.css";
 import { AccountWalletWC } from "~/account-wallet";
 import { useVerification } from "~/composables/useVerification";
 
 const isToggled = ref(false);
 const connected = ref(false);
-const sdk = ref<MerchantSDK | null>(null);
+const sdk = ref<ConcordiumMerchantSDK | null>(null);
 const accountWalletConnect = ref<AccountWalletWC>();
 
 // Initialize verification composable
@@ -39,8 +39,9 @@ const { requestChallenge, verifyProof } = useVerification();
 // Initialize SDK once
 const initSDK = (walletConnectURI?: string) => {
   if (!sdk.value) {
-    sdk.value = new MerchantSDK({
+    sdk.value = new ConcordiumMerchantSDK({
       network: "testnet",
+      // walletConnectUri: walletConnectURI,
     });
   }
 };
@@ -53,8 +54,6 @@ const connectWalletMerchantProvided = async () => {
   }
 
   try {
-    // Initialize SDK without URI (first time)
-    initSDK();
     // Initialize merchant-managed WalletConnect client
     accountWalletConnect.value = new AccountWalletWC();
 
@@ -74,7 +73,6 @@ const connectWalletMerchantProvided = async () => {
     if (existingSession) {
       console.log("Found existing session:", existingSession);
       connected.value = true;
-
       await sdk.value?.showModal("processing");
       // Request challenge and presentation for existing session
       await handleChallengeAndPresentation(existingSession);
@@ -84,7 +82,7 @@ const connectWalletMerchantProvided = async () => {
 
       if (wcUri) {
         // Initialize SDK with the WC URI and render modals
-        sdk.value?.setWalletConnectUri(wcUri);
+        initSDK(wcUri);
         await sdk.value?.renderUIModals();
         // Wait for session to be established (will be handled by presentation_received event)
       }
@@ -168,11 +166,11 @@ const handleSDKEvent = async (event: any) => {
 
 onMounted(() => {
   // Listen to SDK events
-  window.addEventListener("concordium-sdk-event", handleSDKEvent);
+  window.addEventListener("concordium-merchant-sdk-event", handleSDKEvent);
 });
 
 onBeforeUnmount(() => {
   // Clean up event listener
-  window.removeEventListener("concordium-sdk-event", handleSDKEvent);
+  window.removeEventListener("concordium-merchant-sdk-event", handleSDKEvent);
 });
 </script>
