@@ -36,7 +36,7 @@
 <script setup lang="ts">
 import { ref, shallowRef, computed, onMounted, onUnmounted } from "vue";
 import type { SessionTypes, SignClientTypes } from "@walletconnect/types";
-import { ConcordiumIDAppPoup } from "@concordium/id-app-sdk";
+import { ConcordiumIDAppPoup, IDAppSdkWallectConnectMethods, ConcordiumIDAppSDK } from "@concordium/id-app-sdk";
 
 type SignClientInstance = Awaited<
   ReturnType<typeof import("@walletconnect/sign-client").SignClient.init>
@@ -44,8 +44,8 @@ type SignClientInstance = Awaited<
 
 // Constants
 const PROJECT_ID = "8b6c46b9127ce91195745c124870244e";
-const CHAIN_ID = "ccd:4221332d34e1694168c2a0c0b3fd0f27";
-const METHOD_VP = "request_verifiable_presentation_v1";
+const CHAIN_ID =  ConcordiumIDAppSDK.chainId.Testnet; // "ccd:4221332d34e1694168c2a0c0b3fd0f27";
+const METHOD_VP = IDAppSdkWallectConnectMethods.REQUEST_VP_V1;  //"request_verifiable_presentation_v1";
 
 // State
 const walletUri = ref("");
@@ -275,7 +275,7 @@ async function showGenerateProofDialog() {
     }
 
     ConcordiumIDAppPoup.invokeIdAppActionsPopup({
-      generateProof: async () => {
+      onGenerateProof: async () => {
         await generateProof();
       },
       walletConnectSessionTopic: sessionTopic,
